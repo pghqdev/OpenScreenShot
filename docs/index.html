@@ -16,6 +16,8 @@
       --accent: #0071e3; --accent-hover: #0077ed;
       --accent-subtle: #e8f4fd; --border: #d2d2d7;
       --success: #34c759; --warning: #ff9500;
+      --shadow-btn: 0 4px 16px rgba(0,113,227,0.3);
+      --shadow-card: 0 12px 32px rgba(0,0,0,0.08);
       --max-w: 1100px;
     }
     @media (prefers-color-scheme: dark) {
@@ -24,7 +26,8 @@
         --text-1: #f5f5f7; --text-2: #98989d; --text-3: #636366;
         --accent: #0a84ff; --accent-hover: #409cff;
         --accent-subtle: #1a3a5c; --border: #48484a;
-      }
+        --shadow-btn: 0 4px 16px rgba(10,132,255,0.35);
+        --shadow-card: 0 12px 32px rgba(0,0,0,0.35);
     }
     * { box-sizing: border-box; }
     html { scroll-behavior: smooth; }
@@ -63,9 +66,9 @@
       transition: background 150ms ease-out, transform 100ms ease-out, box-shadow 150ms ease-out;
     }
     .btn-primary { background: var(--accent); color: #fff; }
-    .btn-primary:hover { background: var(--accent-hover); transform: translateY(-1px); box-shadow: 0 4px 16px rgba(0,113,227,0.3); }
-    .btn-ghost { background: var(--surface-2); color: var(--text-1); border: 1px solid var(--border); }
-    .btn-ghost:hover { background: var(--surface-3); }
+    .btn-primary:hover { background: var(--accent-hover); transform: translateY(-1px); box-shadow: var(--shadow-btn); }
+    .btn-ghost { background: transparent; color: var(--text-1); border: 1px solid var(--border); }
+    .btn-ghost:hover { background: var(--surface-2); border-color: var(--text-3); }
     .btn-sm { height: 36px; padding: 0 16px; font-size: 14px; }
     .badge {
       display: inline-flex; align-items: center; gap: var(--s-1);
@@ -89,7 +92,7 @@
       padding: var(--s-6); border: 1px solid var(--border); border-radius: var(--r-lg);
       background: var(--surface-2); transition: transform 200ms ease-out, box-shadow 200ms ease-out;
     }
-    .feature-card:hover { transform: translateY(-4px); box-shadow: 0 12px 32px rgba(0,0,0,0.08); }
+    .feature-card:hover { transform: translateY(-4px); box-shadow: var(--shadow-card); }
     .feature-icon { font-size: 32px; margin-bottom: var(--s-3); display: inline-block; }
     .feature-card h3 { font-size: 18px; margin: 0 0 var(--s-2); }
     .feature-card p { font-size: 14px; color: var(--text-2); margin: 0; line-height: 1.55; }

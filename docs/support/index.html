@@ -15,6 +15,7 @@
       --text-1: #1d1d1f; --text-2: #6e6e73; --text-3: #aeaeb2;
       --accent: #0071e3; --accent-hover: #0077ed;
       --accent-subtle: #e8f4fd; --border: #d2d2d7;
+      --shadow-btn: 0 4px 16px rgba(0,113,227,0.3);
       --max-w: 780px;
     }
     @media (prefers-color-scheme: dark) {
@@ -23,7 +24,7 @@
         --text-1: #f5f5f7; --text-2: #98989d; --text-3: #636366;
         --accent: #0a84ff; --accent-hover: #409cff;
         --accent-subtle: #1a3a5c; --border: #48484a;
-      }
+        --shadow-btn: 0 4px 16px rgba(10,132,255,0.35);
     }
     * { box-sizing: border-box; }
     body {
@@ -59,7 +60,7 @@
       font-size: 15px; font-weight: 600; cursor: pointer; color: var(--text-1);
       transition: background 150ms ease-out;
     }
-    .faq-q:hover { background: var(--surface-3); }
+    .faq-q:hover { background: var(--surface-3); border-color: var(--text-3); }
     .faq-a {
       padding: var(--s-3) var(--s-4); border: 1px solid var(--border); border-top: none;
       border-radius: 0 0 var(--r-md) var(--r-md); font-size: 14px; display: none;
@@ -74,7 +75,7 @@
       cursor: pointer; transition: background 150ms ease-out;
     }
     .btn-primary { background: var(--accent); color: #fff; }
-    .btn-primary:hover { background: var(--accent-hover); text-decoration: none; }
+    .btn-primary:hover { background: var(--accent-hover); text-decoration: none; box-shadow: var(--shadow-btn); }
 
     footer {
       margin-top: var(--s-8); border-top: 1px solid var(--border);
