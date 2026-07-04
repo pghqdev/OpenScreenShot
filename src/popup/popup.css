@@ -1,80 +1,10 @@
 /*
- * OpenScreenShot popup styles.
- * Defines the design-token CSS custom properties (mirrors src/shared/design-tokens.ts),
- * light/dark themes, and all popup surface styles (header, capture cards,
- * shortcuts, welcome card, toasts, spinner). Kept compact for the popup.
+ * OpenScreenShot popup styles. Design tokens (spacing, radius, shadows,
+ * typography, light/dark themes) live in src/shared/tokens.css and are shared
+ * with the editor. This file only holds popup surface styles.
  */
 
-:root {
-  /* spacing */
-  --s-1: 4px;
-  --s-2: 8px;
-  --s-3: 12px;
-  --s-4: 16px;
-  --s-5: 24px;
-  --s-6: 32px;
-
-  /* radius */
-  --r-sm: 6px;
-  --r-md: 10px;
-  --r-lg: 16px;
-  --r-full: 9999px;
-
-  /* shadows */
-  --sh-sm: 0 1px 3px rgba(0, 0, 0, 0.08);
-  --sh-md: 0 4px 12px rgba(0, 0, 0, 0.12);
-  --sh-lg: 0 8px 30px rgba(0, 0, 0, 0.16);
-
-  /* type */
-  --font: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
-  --font-mono: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
-}
-
-/* ---- Light theme (default) ---- */
-:root,
-:root[data-theme='light'] {
-  --surface-1: #ffffff;
-  --surface-2: #f5f5f7;
-  --surface-3: #ebebed;
-  --text-1: #1d1d1f;
-  --text-2: #6e6e73;
-  --text-3: #aeaeb2;
-  --accent: #0071e3;
-  --accent-hover: #0077ed;
-  --accent-pressed: #0068d6;
-  --accent-subtle: #e8f4fd;
-  --border: #d2d2d7;
-  --border-focus: #0071e3;
-  --danger: #ff3b30;
-  --success: #34c759;
-  --warning: #ff9500;
-}
-
-/* ---- Dark theme ---- */
-:root[data-theme='dark'] {
-  --surface-1: #1c1c1e;
-  --surface-2: #2c2c2e;
-  --surface-3: #3a3a3c;
-  --text-1: #f5f5f7;
-  --text-2: #98989d;
-  --text-3: #636366;
-  --accent: #0a84ff;
-  --accent-hover: #409cff;
-  --accent-pressed: #0070e0;
-  --accent-subtle: #1a3a5c;
-  --border: #48484a;
-  --border-focus: #0a84ff;
-  --danger: #ff453a;
-  --success: #30d158;
-  --warning: #ff9f0a;
-}
-
-/* Honour the OS preference when no explicit theme is set. */
-@media (prefers-color-scheme: dark) {
-  :root:not([data-theme]) {
-    color-scheme: dark;
-  }
-}
+@import '../shared/tokens.css';
 
 * {
   box-sizing: border-box;
