@@ -308,6 +308,112 @@ body {
   z-index: 6;
 }
 
+/* ---- Export modal ---- */
+.modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.4);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 100;
+}
+.modal {
+  width: 420px;
+  max-width: calc(100vw - 32px);
+  background: var(--surface-1);
+  border: 1px solid var(--border);
+  border-radius: var(--r-lg);
+  box-shadow: var(--sh-lg);
+  padding: var(--s-5);
+}
+.modal-title {
+  margin: 0 0 var(--s-4);
+  font-size: 17px;
+}
+.field-label {
+  display: block;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-2);
+  margin-bottom: var(--s-2);
+}
+.format-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: var(--s-2);
+  margin-bottom: var(--s-4);
+}
+.format-card {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: var(--s-3);
+  border: 1px solid var(--border);
+  border-radius: var(--r-md);
+  background: var(--surface-2);
+  color: var(--text-1);
+  text-align: left;
+  cursor: pointer;
+  transition: border-color 120ms ease-out, background 120ms ease-out;
+}
+.format-card:hover {
+  border-color: var(--accent);
+}
+.format-card.is-selected {
+  border-color: var(--accent);
+  background: var(--accent-subtle);
+}
+.format-card-disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+.format-name {
+  font-weight: 600;
+  font-size: 14px;
+}
+.format-hint {
+  font-size: 11px;
+  color: var(--text-2);
+}
+.modal-row {
+  margin-bottom: var(--s-4);
+}
+.range {
+  width: 100%;
+}
+.filename-row {
+  display: flex;
+  align-items: center;
+  gap: var(--s-2);
+}
+.filename-input {
+  flex: 1;
+  height: 34px;
+  padding: 0 var(--s-2);
+  border: 1px solid var(--border);
+  border-radius: var(--r-md);
+  background: var(--surface-2);
+  color: var(--text-1);
+  font-family: var(--font-mono);
+  font-size: 13px;
+}
+.filename-input:focus {
+  outline: 2px solid var(--border-focus);
+  outline-offset: 1px;
+}
+.filename-ext {
+  font-family: var(--font-mono);
+  font-size: 13px;
+  color: var(--text-2);
+}
+.modal-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--s-2);
+  margin-top: var(--s-4);
+}
+
 /* ---- Overlay messages (loading / empty / error) ---- */
 .overlay-msg {
   position: absolute;

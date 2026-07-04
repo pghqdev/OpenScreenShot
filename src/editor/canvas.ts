@@ -197,6 +197,24 @@ export class CanvasController {
       if (sel) drawSelection(ctx, sel, (x, y) => this.toScreen(x, y));
     }
   }
+
+  /** Composite the image + annotations at full image resolution (no zoom/pan) for export. */
+  composeFinal(): HTMLCanvasElement {
+    const img = this.image;
+    if (!img) throw new Error('No image to export');
+    const canvas = document.createElement('canvas');
+    canvas.width = img.naturalWidth;
+    canvas.height = img.naturalHeight;
+    const ctx = canvas.getContext('2d');
+    if (!ctx) throw new Error('Canvas 2D context unavailable');
+    ctx.drawImage(img, 0, 0);
+    for (const a of this.annotations) {
+      ctx.save();
+      drawAnnotation(ctx, a, img, this.blurCache);
+      ctx.restore();
+    }
+    return canvas;
+  }
 }
 
 function drawCheckerboard(

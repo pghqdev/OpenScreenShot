@@ -35,6 +35,8 @@ import {
 } from './tools';
 import type { LastCapture, Settings } from '../shared/types';
 import { getLastCapture, getSettings } from '../shared/storage';
+import { formatFilename } from '../shared/utils';
+import { canvasToDataUrl, downloadDataUrl, withExtension, type ImageFormat } from './export';
 
 export interface TextOverlayPos {
   x: number;
@@ -78,6 +80,8 @@ export function useEditor() {
   const [cropActive, setCropActive] = useState(false);
   const [cropDraft, setCropDraft] = useState<Rect | null>(null);
   const [spaceHeld, setSpaceHeld] = useState(false);
+  const [settings, setSettingsState] = useState<Settings | null>(null);
+  const [exporting, setExporting] = useState(false);
 
   // Refs for use inside stable event handlers (avoid stale closures).
   const toolRef = useRef(tool);
@@ -159,6 +163,7 @@ export function useEditor() {
 
     void (async () => {
       const s = await getSettings();
+      setSettingsState(s);
       applyTheme(s.theme);
       const cap = await getLastCapture();
       if (!cap) {
@@ -542,6 +547,27 @@ export function useEditor() {
   const fit = useCallback(() => controllerRef.current?.fit(), []);
   const resetZoom = useCallback(() => controllerRef.current?.resetZoom(), []);
 
+  const defaultFilename = useCallback(() => {
+    const tmpl = settings?.filenameTemplate ?? 'screenshot_{date}_{time}';
+    return formatFilename(tmpl, { width: imageSize?.w ?? 0, height: imageSize?.h ?? 0 });
+  }, [settings, imageSize]);
+
+  const exportImage = useCallback(
+    async (format: ImageFormat, quality: number, filenameBase: string) => {
+      const c = controllerRef.current;
+      if (!c || !c.image) return;
+      setExporting(true);
+      try {
+        const canvas = c.composeFinal();
+        const dataUrl = canvasToDataUrl(canvas, format, quality);
+        await downloadDataUrl(dataUrl, withExtension(filenameBase, format));
+      } finally {
+        setExporting(false);
+      }
+    },
+    [],
+  );
+
   // Screen position (relative to canvas) + display size for the text overlay.
   const textOverlayPos = useCallback(
     (id: string): TextOverlayPos | null => {
@@ -595,6 +621,10 @@ export function useEditor() {
     undo,
     redo,
     deleteSelection,
+    exportImage,
+    defaultFilename,
+    exporting,
+    settings,
   };
 }
 

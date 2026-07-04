@@ -1,9 +1,11 @@
-import { useEffect, useRef } from 'preact/hooks';
+import { useEffect, useRef, useState } from 'preact/hooks';
 import { useEditor } from './useEditor';
 import { TOOL_LIST, type Tool } from './tools';
+import { IMAGE_FORMATS, type ImageFormat } from './export';
 
 export function App() {
   const ed = useEditor();
+  const [exportOpen, setExportOpen] = useState(false);
   const cursor = ed.spaceHeld
     ? 'grab'
     : ed.tool === 'text'
@@ -41,7 +43,7 @@ export function App() {
               100%
             </button>
           </div>
-          <button class="btn-primary" disabled title="Export arrives next">
+          <button class="btn-primary" title="Export" disabled={!ed.capture} onClick={() => setExportOpen(true)}>
             Export
           </button>
         </div>
@@ -150,6 +152,106 @@ export function App() {
         <span class="status-spacer" />
         <span class="status-hint">{hintForTool(ed.tool)}</span>
       </footer>
+
+      {exportOpen && ed.capture ? <ExportDialog ed={ed} onClose={() => setExportOpen(false)} /> : null}
+    </div>
+  );
+}
+
+function ExportDialog({ ed, onClose }: { ed: ReturnType<typeof useEditor>; onClose: () => void }) {
+  const defaultFmt = ed.settings?.defaultFormat ?? 'png';
+  const initialFormat: ImageFormat = defaultFmt === 'pdf' ? 'png' : defaultFmt;
+  const [format, setFormat] = useState<ImageFormat>(initialFormat);
+  const [quality, setQuality] = useState(ed.settings?.quality ?? 0.92);
+  const [filenameBase, setFilenameBase] = useState(ed.defaultFilename());
+
+  const showQuality = format === 'jpeg' || format === 'webp';
+  const ext = format === 'jpeg' ? 'jpg' : format;
+
+  async function doExport() {
+    await ed.exportImage(format, quality, filenameBase);
+    onClose();
+  }
+
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') onClose();
+    };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [onClose]);
+
+  return (
+    <div class="modal-backdrop" onMouseDown={onClose}>
+      <div
+        class="modal"
+        role="dialog"
+        aria-modal="true"
+        aria-label="Export screenshot"
+        onMouseDown={(e) => e.stopPropagation()}
+      >
+        <h2 class="modal-title">Export</h2>
+
+        <div class="field-label">Format</div>
+        <div class="format-grid">
+          {IMAGE_FORMATS.map((f) => (
+            <button
+              key={f.id}
+              class={`format-card${format === f.id ? ' is-selected' : ''}`}
+              aria-pressed={format === f.id}
+              onClick={() => setFormat(f.id)}
+            >
+              <span class="format-name">{f.label}</span>
+              <span class="format-hint">{f.hint}</span>
+            </button>
+          ))}
+          <button class="format-card format-card-disabled" disabled title="PDF arrives next">
+            <span class="format-name">PDF</span>
+            <span class="format-hint">Soon</span>
+          </button>
+        </div>
+
+        {showQuality ? (
+          <div class="modal-row">
+            <label class="field-label" for="oss-quality">
+              Quality · {Math.round(quality * 100)}%
+            </label>
+            <input
+              id="oss-quality"
+              class="range"
+              type="range"
+              min="0.1"
+              max="1"
+              step="0.05"
+              value={quality}
+              onInput={(e) => setQuality(Number((e.target as HTMLInputElement).value))}
+            />
+          </div>
+        ) : null}
+
+        <div class="modal-row">
+          <label class="field-label" for="oss-filename">Filename</label>
+          <div class="filename-row">
+            <input
+              id="oss-filename"
+              class="filename-input"
+              type="text"
+              value={filenameBase}
+              onInput={(e) => setFilenameBase((e.target as HTMLInputElement).value)}
+            />
+            <span class="filename-ext">.{ext}</span>
+          </div>
+        </div>
+
+        <div class="modal-actions">
+          <button class="text-btn" onClick={onClose}>
+            Cancel
+          </button>
+          <button class="btn-primary" onClick={doExport} disabled={ed.exporting}>
+            {ed.exporting ? 'Exporting…' : 'Export'}
+          </button>
+        </div>
+      </div>
     </div>
   );
 }
