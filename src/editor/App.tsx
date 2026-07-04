@@ -2,6 +2,9 @@ import { useEffect, useRef, useState } from 'preact/hooks';
 import { useEditor } from './useEditor';
 import { TOOL_LIST, type Tool } from './tools';
 import { IMAGE_FORMATS, type ImageFormat } from './export';
+import type { PdfOptions } from './pdf';
+
+type DialogFormat = ImageFormat | 'pdf';
 
 export function App() {
   const ed = useEditor();
@@ -159,17 +162,36 @@ export function App() {
 }
 
 function ExportDialog({ ed, onClose }: { ed: ReturnType<typeof useEditor>; onClose: () => void }) {
-  const defaultFmt = ed.settings?.defaultFormat ?? 'png';
-  const initialFormat: ImageFormat = defaultFmt === 'pdf' ? 'png' : defaultFmt;
-  const [format, setFormat] = useState<ImageFormat>(initialFormat);
+  const df = ed.settings?.defaultFormat ?? 'png';
+  const initialFormat: DialogFormat = df === 'pdf' || df === 'png' || df === 'jpeg' || df === 'webp' ? df : 'png';
+  const [format, setFormat] = useState<DialogFormat>(initialFormat);
   const [quality, setQuality] = useState(ed.settings?.quality ?? 0.92);
   const [filenameBase, setFilenameBase] = useState(ed.defaultFilename());
 
+  const [pdfPageSize, setPdfPageSize] = useState<'a4' | 'letter' | 'full'>(ed.settings?.pdfPageSize ?? 'a4');
+  const [pdfOrientation, setPdfOrientation] = useState<'portrait' | 'landscape'>(
+    ed.settings?.pdfOrientation ?? 'portrait',
+  );
+  const [pdfMultiPage, setPdfMultiPage] = useState(ed.settings?.pdfMultiPage ?? true);
+  const [pdfMargin, setPdfMargin] = useState(ed.settings?.pdfMarginMm ?? 8);
+
+  const isFull = pdfPageSize === 'full';
   const showQuality = format === 'jpeg' || format === 'webp';
-  const ext = format === 'jpeg' ? 'jpg' : format;
+  const showPdfOptions = format === 'pdf';
+  const ext = format === 'pdf' ? 'pdf' : format === 'jpeg' ? 'jpg' : format;
 
   async function doExport() {
-    await ed.exportImage(format, quality, filenameBase);
+    if (format === 'pdf') {
+      const opts: PdfOptions = {
+        pageSize: pdfPageSize,
+        orientation: pdfOrientation,
+        multiPage: pdfMultiPage,
+        marginMm: pdfMargin,
+      };
+      await ed.exportPdf(opts, filenameBase);
+    } else {
+      await ed.exportImage(format, quality, filenameBase);
+    }
     onClose();
   }
 
@@ -205,9 +227,13 @@ function ExportDialog({ ed, onClose }: { ed: ReturnType<typeof useEditor>; onClo
               <span class="format-hint">{f.hint}</span>
             </button>
           ))}
-          <button class="format-card format-card-disabled" disabled title="PDF arrives next">
+          <button
+            class={`format-card${format === 'pdf' ? ' is-selected' : ''}`}
+            aria-pressed={format === 'pdf'}
+            onClick={() => setFormat('pdf')}
+          >
             <span class="format-name">PDF</span>
-            <span class="format-hint">Soon</span>
+            <span class="format-hint">Document · multi-page</span>
           </button>
         </div>
 
@@ -227,6 +253,81 @@ function ExportDialog({ ed, onClose }: { ed: ReturnType<typeof useEditor>; onClo
               onInput={(e) => setQuality(Number((e.target as HTMLInputElement).value))}
             />
           </div>
+        ) : null}
+
+        {showPdfOptions ? (
+          <>
+            <div class="modal-row">
+              <div class="field-label">Page size</div>
+              <div class="segmented">
+                <button
+                  class={`segmented-btn${pdfPageSize === 'a4' ? ' is-selected' : ''}`}
+                  onClick={() => setPdfPageSize('a4')}
+                >
+                  A4
+                </button>
+                <button
+                  class={`segmented-btn${pdfPageSize === 'letter' ? ' is-selected' : ''}`}
+                  onClick={() => setPdfPageSize('letter')}
+                >
+                  Letter
+                </button>
+                <button
+                  class={`segmented-btn${pdfPageSize === 'full' ? ' is-selected' : ''}`}
+                  onClick={() => setPdfPageSize('full')}
+                >
+                  Full
+                </button>
+              </div>
+            </div>
+            <div class="modal-row">
+              <div class="field-label">Orientation</div>
+              <div class="segmented">
+                <button
+                  class={`segmented-btn${pdfOrientation === 'portrait' ? ' is-selected' : ''}`}
+                  disabled={isFull}
+                  onClick={() => setPdfOrientation('portrait')}
+                >
+                  Portrait
+                </button>
+                <button
+                  class={`segmented-btn${pdfOrientation === 'landscape' ? ' is-selected' : ''}`}
+                  disabled={isFull}
+                  onClick={() => setPdfOrientation('landscape')}
+                >
+                  Landscape
+                </button>
+              </div>
+            </div>
+            <div class="modal-row check-row">
+              <label class="check-label">
+                <input
+                  type="checkbox"
+                  checked={pdfMultiPage && !isFull}
+                  disabled={isFull}
+                  onChange={(e) => setPdfMultiPage((e.target as HTMLInputElement).checked)}
+                />
+                Split across multiple pages
+              </label>
+              <label class="check-label">
+                Margin
+                <input
+                  class="num-input"
+                  type="number"
+                  min="0"
+                  max="40"
+                  step="1"
+                  value={pdfMargin}
+                  disabled={isFull}
+                  onInput={(e) => setPdfMargin(Number((e.target as HTMLInputElement).value))}
+                />
+                mm
+              </label>
+            </div>
+            {isFull ? (
+              <p class="pdf-hint">“Full” makes one page sized to the image, so orientation, multi-page and margin don’t apply.</p>
+            ) : null}
+          </>
         ) : null}
 
         <div class="modal-row">

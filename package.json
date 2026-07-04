@@ -23,6 +23,7 @@
     "package": "npm run build && cd dist && zip -r -X ../openscreenshot-v$npm_package_version.zip ."
   },
   "dependencies": {
+    "jspdf": "^4.2.1",
     "preact": "^10.29.4"
   },
   "devDependencies": {

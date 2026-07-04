@@ -37,6 +37,7 @@ import type { LastCapture, Settings } from '../shared/types';
 import { getLastCapture, getSettings } from '../shared/storage';
 import { formatFilename } from '../shared/utils';
 import { canvasToDataUrl, downloadDataUrl, withExtension, type ImageFormat } from './export';
+import { exportPdf as exportPdfFile, type PdfOptions } from './pdf';
 
 export interface TextOverlayPos {
   x: number;
@@ -568,6 +569,21 @@ export function useEditor() {
     [],
   );
 
+  const exportPdf = useCallback(
+    async (opts: PdfOptions, filenameBase: string) => {
+      const c = controllerRef.current;
+      if (!c || !c.image) return;
+      setExporting(true);
+      try {
+        const canvas = c.composeFinal();
+        await exportPdfFile(canvas, opts, `${filenameBase}.pdf`);
+      } finally {
+        setExporting(false);
+      }
+    },
+    [],
+  );
+
   // Screen position (relative to canvas) + display size for the text overlay.
   const textOverlayPos = useCallback(
     (id: string): TextOverlayPos | null => {
@@ -622,6 +638,7 @@ export function useEditor() {
     redo,
     deleteSelection,
     exportImage,
+    exportPdf,
     defaultFilename,
     exporting,
     settings,
