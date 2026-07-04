@@ -3,6 +3,7 @@ import { useEditor } from './useEditor';
 import { TOOL_LIST, type Tool } from './tools';
 import { IMAGE_FORMATS, type ImageFormat } from './export';
 import type { PdfOptions } from './pdf';
+import { COLOR_PALETTE, STROKE_WIDTHS } from './annotations';
 
 type DialogFormat = ImageFormat | 'pdf';
 
@@ -67,6 +68,8 @@ export function App() {
           </button>
         </div>
       </header>
+
+      <StyleBar ed={ed} />
 
       <div class="workspace">
         <aside class="toolbar" aria-label="Annotation tools">
@@ -185,6 +188,71 @@ export function App() {
       ) : null}
     </div>
   );
+}
+
+function StyleBar({ ed }: { ed: ReturnType<typeof useEditor> }) {
+  const sel = ed.selectedAnnotation;
+  const showFontSize = ed.tool === 'text' || sel?.type === 'text';
+  return (
+    <div class="stylebar" role="toolbar" aria-label="Annotation style">
+      <div class="stylebar-group">
+        <span class="stylebar-label">Color</span>
+        <div class="swatches">
+          {COLOR_PALETTE.map((c) => (
+            <button
+              key={c}
+              class="swatch"
+              style={{ backgroundColor: c }}
+              data-light={isLight(c) ? '1' : undefined}
+              aria-label={c}
+              aria-pressed={ed.style.color === c}
+              onClick={() => ed.setStyleColor(c)}
+            />
+          ))}
+        </div>
+      </div>
+      <div class="stylebar-group">
+        <span class="stylebar-label">Stroke</span>
+        <div class="widths">
+          {STROKE_WIDTHS.map((w) => (
+            <button
+              key={w}
+              class="width-btn"
+              aria-label={`${w}px`}
+              aria-pressed={ed.style.strokeWidth === w}
+              onClick={() => ed.setStyleStrokeWidth(w)}
+            >
+              <span class="width-bar" style={{ height: `${Math.min(w, 8)}px` }} />
+            </button>
+          ))}
+        </div>
+      </div>
+      {showFontSize ? (
+        <div class="stylebar-group">
+          <span class="stylebar-label">Size · {ed.style.fontSize}px</span>
+          <input
+            class="range stylebar-range"
+            type="range"
+            min="12"
+            max="96"
+            step="2"
+            value={ed.style.fontSize}
+            onInput={(e) => ed.setStyleFontSize(Number((e.target as HTMLInputElement).value))}
+          />
+        </div>
+      ) : null}
+    </div>
+  );
+}
+
+function isLight(hex: string): boolean {
+  const m = /^#([0-9a-f]{6})$/i.exec(hex);
+  if (!m) return false;
+  const n = parseInt(m[1], 16);
+  const r = (n >> 16) & 255;
+  const g = (n >> 8) & 255;
+  const b = n & 255;
+  return 0.299 * r + 0.587 * g + 0.114 * b > 200;
 }
 
 function ExportDialog({ ed, onClose }: { ed: ReturnType<typeof useEditor>; onClose: () => void }) {

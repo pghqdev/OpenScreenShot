@@ -8,9 +8,6 @@
  */
 import {
   DEFAULT_BLUR_STRENGTH,
-  DEFAULT_FONT_SIZE,
-  DEFAULT_STROKE,
-  DEFAULT_STROKE_WIDTH,
   genId,
   type Annotation,
   type Point,
@@ -38,7 +35,12 @@ export const TOOL_LIST: ToolDef[] = [
 ];
 
 /** Create a fresh draft annotation for a shape tool at point `p`. */
-export function createShapeDraft(tool: ShapeTool, p: Point): Annotation {
+export function createShapeDraft(
+  tool: ShapeTool,
+  p: Point,
+  stroke: string,
+  strokeWidth: number,
+): Annotation {
   const id = genId();
   switch (tool) {
     case 'rect':
@@ -49,8 +51,8 @@ export function createShapeDraft(tool: ShapeTool, p: Point): Annotation {
         y: p.y,
         w: 0,
         h: 0,
-        stroke: DEFAULT_STROKE,
-        strokeWidth: DEFAULT_STROKE_WIDTH,
+        stroke,
+        strokeWidth,
         fill: null,
       };
     case 'arrow':
@@ -61,16 +63,16 @@ export function createShapeDraft(tool: ShapeTool, p: Point): Annotation {
         y1: p.y,
         x2: p.x,
         y2: p.y,
-        stroke: DEFAULT_STROKE,
-        strokeWidth: DEFAULT_STROKE_WIDTH,
+        stroke,
+        strokeWidth,
       };
     case 'pen':
       return {
         id,
         type: 'pen',
         points: [p],
-        stroke: DEFAULT_STROKE,
-        strokeWidth: DEFAULT_STROKE_WIDTH,
+        stroke,
+        strokeWidth,
       };
     case 'blur':
       return { id, type: 'blur', x: p.x, y: p.y, w: 0, h: 0, strength: DEFAULT_BLUR_STRENGTH };
@@ -113,15 +115,15 @@ export function shouldCommit(draft: Annotation): boolean {
 }
 
 /** Create an empty text annotation placed at `p` (edited via the overlay). */
-export function createTextAnnotation(p: Point): TextAnnotation {
+export function createTextAnnotation(p: Point, color: string, fontSize: number): TextAnnotation {
   return {
     id: genId(),
     type: 'text',
     x: p.x,
     y: p.y,
     text: '',
-    fontSize: DEFAULT_FONT_SIZE,
-    color: DEFAULT_STROKE,
+    fontSize,
+    color,
     width: 0,
     height: 0,
   };

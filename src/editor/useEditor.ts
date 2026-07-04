@@ -16,11 +16,13 @@ import { CanvasController } from './canvas';
 import type { Annotation, Rect } from './annotations';
 import {
   bbox,
+  DEFAULT_STYLE,
   handleAt,
   measureTextSize,
   normalizeRect,
   resizeRect,
   translateAnnotation,
+  type AnnotationStyle,
   type Handle,
 } from './annotations';
 import {
@@ -83,6 +85,7 @@ export function useEditor() {
   const [spaceHeld, setSpaceHeld] = useState(false);
   const [settings, setSettingsState] = useState<Settings | null>(null);
   const [exporting, setExporting] = useState(false);
+  const [style, setStyle] = useState<AnnotationStyle>(DEFAULT_STYLE);
 
   // Refs for use inside stable event handlers (avoid stale closures).
   const toolRef = useRef(tool);
@@ -95,6 +98,7 @@ export function useEditor() {
   const pastRef = useRef(past);
   const futureRef = useRef(future);
   const dragSnapshottedRef = useRef(false);
+  const styleRef = useRef(style);
 
   useEffect(() => {
     toolRef.current = tool;
@@ -109,6 +113,21 @@ export function useEditor() {
   useEffect(() => {
     selectedIdRef.current = selectedId;
     controllerRef.current?.setSelected(selectedId);
+  }, [selectedId]);
+
+  useEffect(() => {
+    styleRef.current = style;
+  }, [style]);
+
+  // When a new annotation is selected, adopt its style in the style bar.
+  useEffect(() => {
+    const a = annotationsRef.current.find((x) => x.id === selectedId);
+    if (!a) return;
+    if (a.type === 'rect' || a.type === 'arrow' || a.type === 'pen') {
+      setStyle((s) => ({ ...s, color: a.stroke, strokeWidth: a.strokeWidth }));
+    } else if (a.type === 'text') {
+      setStyle((s) => ({ ...s, color: a.color, fontSize: a.fontSize }));
+    }
   }, [selectedId]);
 
   useEffect(() => {
@@ -154,6 +173,50 @@ export function useEditor() {
     commit((prev) => prev.filter((x) => x.id !== id));
     setSelectedId(null);
   }, [commit]);
+
+  // --- Style (color / stroke width / font size) ---
+  const applyStyleToSelected = useCallback(
+    (patch: (a: Annotation) => Annotation) => {
+      const id = selectedIdRef.current;
+      if (!id) return;
+      commit((prev) => prev.map((a) => (a.id === id ? patch(a) : a)));
+    },
+    [commit],
+  );
+
+  const setStyleColor = useCallback(
+    (color: string) => {
+      setStyle((s) => ({ ...s, color }));
+      applyStyleToSelected((a) =>
+        a.type === 'text'
+          ? { ...a, color }
+          : a.type === 'rect' || a.type === 'arrow' || a.type === 'pen'
+            ? { ...a, stroke: color }
+            : a,
+      );
+    },
+    [applyStyleToSelected],
+  );
+
+  const setStyleStrokeWidth = useCallback(
+    (strokeWidth: number) => {
+      setStyle((s) => ({ ...s, strokeWidth }));
+      applyStyleToSelected((a) =>
+        a.type === 'rect' || a.type === 'arrow' || a.type === 'pen' ? { ...a, strokeWidth } : a,
+      );
+    },
+    [applyStyleToSelected],
+  );
+
+  const setStyleFontSize = useCallback(
+    (fontSize: number) => {
+      setStyle((s) => ({ ...s, fontSize }));
+      applyStyleToSelected((a) =>
+        a.type === 'text' ? { ...a, fontSize, ...measureTextSize(a.text, fontSize) } : a,
+      );
+    },
+    [applyStyleToSelected],
+  );
 
   // Create the controller + load the stashed capture on mount.
   useEffect(() => {
@@ -450,7 +513,12 @@ export function useEditor() {
         return;
       }
       // Shape tool (rect / arrow / pen / blur).
-      const draft = createShapeDraft(t as ShapeTool, p);
+      const draft = createShapeDraft(
+        t as ShapeTool,
+        p,
+        styleRef.current.color,
+        styleRef.current.strokeWidth,
+      );
       draftRef.current = draft;
       c.setDraft(draft);
       interactionRef.current = { kind: t === 'pen' ? 'pen' : 'shape' };
@@ -462,7 +530,7 @@ export function useEditor() {
 
   // --- Text ---
   function startText(p: { x: number; y: number }) {
-    const ann = createTextAnnotation(p);
+    const ann = createTextAnnotation(p, styleRef.current.color, styleRef.current.fontSize);
     commit((prev) => [...prev, ann]);
     setTextEdit({ id: ann.id });
   }
@@ -611,6 +679,9 @@ export function useEditor() {
 
   const c = controllerRef.current;
   const zoomPct = c ? Math.round(c.view.zoom * 100) : 100;
+  const selectedAnnotation = selectedId
+    ? (annotations.find((a) => a.id === selectedId) ?? null)
+    : null;
 
   return {
     canvasRef,
@@ -630,6 +701,11 @@ export function useEditor() {
     canUndo: past.length > 0,
     canRedo: future.length > 0,
     hasSelection: !!selectedId,
+    selectedAnnotation,
+    style,
+    setStyleColor,
+    setStyleStrokeWidth,
+    setStyleFontSize,
     zoomIn,
     zoomOut,
     fit,

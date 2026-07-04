@@ -85,6 +85,34 @@ export const DEFAULT_STROKE_WIDTH = 6;
 export const DEFAULT_FONT_SIZE = 28;
 export const DEFAULT_BLUR_STRENGTH = 8;
 
+/** Editable annotation style (the style bar's current value). */
+export interface AnnotationStyle {
+  color: string;
+  strokeWidth: number;
+  fontSize: number;
+}
+
+export const DEFAULT_STYLE: AnnotationStyle = {
+  color: DEFAULT_STROKE,
+  strokeWidth: DEFAULT_STROKE_WIDTH,
+  fontSize: DEFAULT_FONT_SIZE,
+};
+
+/** Swatches for the style bar. */
+export const COLOR_PALETTE: string[] = [
+  '#ff3b30',
+  '#ff9500',
+  '#ffcc00',
+  '#34c759',
+  '#0071e3',
+  '#af52de',
+  '#ffffff',
+  '#1d1d1f',
+];
+
+/** Stroke-width presets for the style bar. */
+export const STROKE_WIDTHS: number[] = [3, 6, 12];
+
 const FONT_STACK = "Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif";
 
 /** Generate a unique annotation id. */
