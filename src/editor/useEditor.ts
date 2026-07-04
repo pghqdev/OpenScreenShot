@@ -2,14 +2,27 @@
  * useEditor — the editor's state + interaction layer.
  *
  * Owns the CanvasController, the loaded capture, the annotation list, the active
- * tool, and all mouse/keyboard interactions (drawing, text, crop, pan/zoom).
- * App.tsx is a thin presentational consumer. Selection / move / resize / undo
- * arrive in a later commit; this hook covers creation tools for now.
+ * tool, selection, and undo/redo history, plus all mouse/keyboard interactions
+ * (drawing, selecting, moving, resizing, text, crop, pan/zoom). App.tsx is a
+ * thin presentational consumer.
+ *
+ * History records annotation-list snapshots. Each mutating action snapshots the
+ * pre-change list (one entry per action — a move/resize drag snapshots on first
+ * motion, not per mousemove). Crop is destructive and clears history (the
+ * pre-crop annotation coordinates are invalid for the cropped image).
  */
 import { useCallback, useEffect, useRef, useState } from 'preact/hooks';
 import { CanvasController } from './canvas';
 import type { Annotation, Rect } from './annotations';
-import { bbox, measureTextSize, normalizeRect, translateAnnotation } from './annotations';
+import {
+  bbox,
+  handleAt,
+  measureTextSize,
+  normalizeRect,
+  resizeRect,
+  translateAnnotation,
+  type Handle,
+} from './annotations';
 import {
   createShapeDraft,
   createTextAnnotation,
@@ -36,6 +49,15 @@ type Interaction =
   | { kind: 'crop'; start: { x: number; y: number } }
   | { kind: 'shape' }
   | { kind: 'pen' }
+  | { kind: 'move'; id: string; lastX: number; lastY: number }
+  | {
+      kind: 'resize';
+      id: string;
+      handle: Handle;
+      startBBox: Rect;
+      startPt: { x: number; y: number };
+      annType: 'rect' | 'blur' | 'arrow';
+    }
   | null;
 
 export function useEditor() {
@@ -44,6 +66,9 @@ export function useEditor() {
 
   const [annotations, setAnnotations] = useState<Annotation[]>([]);
   const [tool, setTool] = useState<Tool>('select');
+  const [selectedId, setSelectedId] = useState<string | null>(null);
+  const [past, setPast] = useState<Annotation[][]>([]);
+  const [future, setFuture] = useState<Annotation[][]>([]);
   const [, setViewTick] = useState(0);
   const [capture, setCapture] = useState<LastCapture | null>(null);
   const [imageSize, setImageSize] = useState<{ w: number; h: number } | null>(null);
@@ -60,15 +85,70 @@ export function useEditor() {
   const draftRef = useRef<Annotation | null>(null);
   const interactionRef = useRef<Interaction>(null);
   const cropDraftRef = useRef<Rect | null>(null);
+  const annotationsRef = useRef(annotations);
+  const selectedIdRef = useRef(selectedId);
+  const pastRef = useRef(past);
+  const futureRef = useRef(future);
+  const dragSnapshottedRef = useRef(false);
 
   useEffect(() => {
     toolRef.current = tool;
   }, [tool]);
 
-  // Keep the controller's annotation list in sync with React state.
+  // Sync annotations to the controller + a ref for history/hit-testing.
   useEffect(() => {
+    annotationsRef.current = annotations;
     controllerRef.current?.setAnnotations(annotations);
   }, [annotations]);
+
+  useEffect(() => {
+    selectedIdRef.current = selectedId;
+    controllerRef.current?.setSelected(selectedId);
+  }, [selectedId]);
+
+  useEffect(() => {
+    pastRef.current = past;
+  }, [past]);
+  useEffect(() => {
+    futureRef.current = future;
+  }, [future]);
+
+  // --- History ---
+  const commit = useCallback((updater: (prev: Annotation[]) => Annotation[]) => {
+    setPast((p) => [...p, annotationsRef.current]);
+    setFuture([]);
+    setAnnotations(updater);
+  }, []);
+
+  const snapshot = useCallback(() => {
+    setPast((p) => [...p, annotationsRef.current]);
+    setFuture([]);
+  }, []);
+
+  const undo = useCallback(() => {
+    if (pastRef.current.length === 0) return;
+    const last = pastRef.current[pastRef.current.length - 1];
+    setPast((p) => p.slice(0, -1));
+    setFuture((f) => [annotationsRef.current, ...f]);
+    setAnnotations(last);
+    setSelectedId(null);
+  }, []);
+
+  const redo = useCallback(() => {
+    if (futureRef.current.length === 0) return;
+    const next = futureRef.current[0];
+    setFuture((f) => f.slice(1));
+    setPast((p) => [...p, annotationsRef.current]);
+    setAnnotations(next);
+    setSelectedId(null);
+  }, []);
+
+  const deleteSelection = useCallback(() => {
+    const id = selectedIdRef.current;
+    if (!id) return;
+    commit((prev) => prev.filter((x) => x.id !== id));
+    setSelectedId(null);
+  }, [commit]);
 
   // Create the controller + load the stashed capture on mount.
   useEffect(() => {
@@ -119,8 +199,14 @@ export function useEditor() {
     return () => canvas.removeEventListener('wheel', onWheel);
   }, []);
 
-  // Space = temporary pan; tool shortcuts; Esc cancels crop.
+  const cropActiveRef = useRef(false);
   useEffect(() => {
+    cropActiveRef.current = cropActive;
+  }, [cropActive]);
+
+  // Space = temporary pan; tool shortcuts; undo/redo; delete; Esc.
+  useEffect(() => {
+    const isMod = (e: KeyboardEvent) => e.ctrlKey || e.metaKey;
     const down = (e: KeyboardEvent) => {
       if (e.code === 'Space' && !isTypingTarget(e.target)) {
         e.preventDefault();
@@ -129,17 +215,43 @@ export function useEditor() {
         return;
       }
       if (isTypingTarget(e.target)) return;
-      if (!e.ctrlKey && !e.metaKey && !e.altKey) {
+
+      // Undo / redo.
+      if (isMod(e) && (e.key === 'z' || e.key === 'Z')) {
+        e.preventDefault();
+        if (e.shiftKey) redo();
+        else undo();
+        return;
+      }
+      if (isMod(e) && (e.key === 'y' || e.key === 'Y')) {
+        e.preventDefault();
+        redo();
+        return;
+      }
+      // Delete selected.
+      if ((e.key === 'Delete' || e.key === 'Backspace') && selectedIdRef.current) {
+        e.preventDefault();
+        deleteSelection();
+        return;
+      }
+      // Escape: cancel crop, else deselect.
+      if (e.key === 'Escape') {
+        if (cropActiveRef.current) {
+          cancelCrop();
+          e.preventDefault();
+        } else if (selectedIdRef.current) {
+          setSelectedId(null);
+          e.preventDefault();
+        }
+        return;
+      }
+      // Tool shortcuts.
+      if (!isMod(e) && !e.altKey) {
         const t = TOOL_LIST.find((x) => x.shortcut === e.key.toUpperCase());
         if (t) {
           setTool(t.id);
           e.preventDefault();
-          return;
         }
-      }
-      if (e.key === 'Escape' && cropActiveRef.current) {
-        cancelCrop();
-        e.preventDefault();
       }
     };
     const up = (e: KeyboardEvent) => {
@@ -154,7 +266,7 @@ export function useEditor() {
       window.removeEventListener('keydown', down);
       window.removeEventListener('keyup', up);
     };
-  }, []);
+  }, [undo, redo, deleteSelection]);
 
   // --- Drag handlers (attached to window during a drag) ---
   const onDragMove = useCallback((e: MouseEvent) => {
@@ -177,6 +289,45 @@ export function useEditor() {
       c.setCropRect(r);
       return;
     }
+    if (it.kind === 'move') {
+      if (!dragSnapshottedRef.current) {
+        snapshot();
+        dragSnapshottedRef.current = true;
+      }
+      const dx = p.x - it.lastX;
+      const dy = p.y - it.lastY;
+      it.lastX = p.x;
+      it.lastY = p.y;
+      const id = it.id;
+      setAnnotations((prev) => prev.map((a) => (a.id === id ? translateAnnotation(a, dx, dy) : a)));
+      return;
+    }
+    if (it.kind === 'resize') {
+      if (!dragSnapshottedRef.current) {
+        snapshot();
+        dragSnapshottedRef.current = true;
+      }
+      const dx = p.x - it.startPt.x;
+      const dy = p.y - it.startPt.y;
+      const id = it.id;
+      const handle = it.handle;
+      const startBBox = it.startBBox;
+      setAnnotations((prev) =>
+        prev.map((a) => {
+          if (a.id !== id) return a;
+          if (a.type === 'rect' || a.type === 'blur') {
+            const r = resizeRect(startBBox, handle, dx, dy);
+            return { ...a, x: r.x, y: r.y, w: r.w, h: r.h };
+          }
+          if (a.type === 'arrow') {
+            if (handle === 'start') return { ...a, x1: p.x, y1: p.y };
+            return { ...a, x2: p.x, y2: p.y };
+          }
+          return a;
+        }),
+      );
+      return;
+    }
     const draft = draftRef.current;
     if (!draft) return;
     if (it.kind === 'pen' && draft.type === 'pen') {
@@ -185,7 +336,7 @@ export function useEditor() {
     }
     extendDraft(draft, p);
     c.setDraft(draft);
-  }, []);
+  }, [snapshot]);
 
   const onDragUp = useCallback(() => {
     const c = controllerRef.current;
@@ -193,6 +344,7 @@ export function useEditor() {
     window.removeEventListener('mousemove', onDragMove);
     window.removeEventListener('mouseup', onDragUp);
     interactionRef.current = null;
+    dragSnapshottedRef.current = false;
     if (!c || !it) return;
     if (it.kind === 'crop') {
       const r = cropDraftRef.current;
@@ -212,10 +364,11 @@ export function useEditor() {
       draftRef.current = null;
       c.setDraft(null);
       if (draft && shouldCommit(draft)) {
-        setAnnotations((prev) => [...prev, draft]);
+        commit((prev) => [...prev, draft]);
       }
     }
-  }, [onDragMove]);
+    // move / resize: changes already applied during drag (one snapshot on first move).
+  }, [onDragMove, commit]);
 
   const onCanvasMouseDown = useCallback(
     (e: MouseEvent) => {
@@ -235,7 +388,44 @@ export function useEditor() {
       if (e.button !== 0) return;
       const p = c.toImage(sx, sy);
       const t = toolRef.current;
-      if (t === 'select') return; // arrives with selection
+
+      if (t === 'select') {
+        // Resize: handle hit on the currently selected annotation.
+        const selId = selectedIdRef.current;
+        if (selId) {
+          const sel = annotationsRef.current.find((a) => a.id === selId) ?? null;
+          if (sel && (sel.type === 'rect' || sel.type === 'blur' || sel.type === 'arrow')) {
+            const h = handleAt(sel, (x, y) => c.toScreen(x, y), sx, sy);
+            if (h) {
+              interactionRef.current = {
+                kind: 'resize',
+                id: selId,
+                handle: h,
+                startBBox: bbox(sel),
+                startPt: p,
+                annType: sel.type,
+              };
+              window.addEventListener('mousemove', onDragMove);
+              window.addEventListener('mouseup', onDragUp);
+              return;
+            }
+          }
+        }
+        // Select + move: hit-test annotations topmost-first.
+        const hit = hitTestAnnotation(c, annotationsRef.current, sx, sy);
+        if (hit) {
+          setSelectedId(hit);
+          selectedIdRef.current = hit;
+          interactionRef.current = { kind: 'move', id: hit, lastX: p.x, lastY: p.y };
+          window.addEventListener('mousemove', onDragMove);
+          window.addEventListener('mouseup', onDragUp);
+        } else {
+          setSelectedId(null);
+          selectedIdRef.current = null;
+        }
+        return;
+      }
+
       if (t === 'text') {
         startText(p);
         return;
@@ -262,7 +452,7 @@ export function useEditor() {
   // --- Text ---
   function startText(p: { x: number; y: number }) {
     const ann = createTextAnnotation(p);
-    setAnnotations((prev) => [...prev, ann]);
+    commit((prev) => [...prev, ann]);
     setTextEdit({ id: ann.id });
   }
 
@@ -332,14 +522,11 @@ export function useEditor() {
           return b.x < w && b.y < h && b.x + b.w > 0 && b.y + b.h > 0;
         }),
     );
+    setSelectedId(null);
+    setPast([]);
+    setFuture([]);
     cancelCrop();
   }, [cancelCrop]);
-
-  // cropActive mirror for the keyboard handler (stable effect, no stale closure).
-  const cropActiveRef = useRef(false);
-  useEffect(() => {
-    cropActiveRef.current = cropActive;
-  }, [cropActive]);
 
   // --- Zoom controls ---
   const zoomAtCenter = useCallback((factor: number) => {
@@ -355,7 +542,7 @@ export function useEditor() {
   const fit = useCallback(() => controllerRef.current?.fit(), []);
   const resetZoom = useCallback(() => controllerRef.current?.resetZoom(), []);
 
-  // Screen position (relative to canvas) + display font size for the text overlay.
+  // Screen position (relative to canvas) + display size for the text overlay.
   const textOverlayPos = useCallback(
     (id: string): TextOverlayPos | null => {
       const c = controllerRef.current;
@@ -379,10 +566,10 @@ export function useEditor() {
 
   return {
     canvasRef,
-    controller: controllerRef,
     annotations,
     tool,
     setTool,
+    selectedId,
     capture,
     imageSize,
     loading,
@@ -392,6 +579,9 @@ export function useEditor() {
     cropDraft,
     spaceHeld,
     zoomPct,
+    canUndo: past.length > 0,
+    canRedo: future.length > 0,
+    hasSelection: !!selectedId,
     zoomIn,
     zoomOut,
     fit,
@@ -402,7 +592,29 @@ export function useEditor() {
     applyCrop,
     cancelCrop,
     textOverlayPos,
+    undo,
+    redo,
+    deleteSelection,
   };
+}
+
+/** Hit-test annotations topmost-first in screen space; returns an id or null. */
+function hitTestAnnotation(
+  c: CanvasController,
+  anns: Annotation[],
+  sx: number,
+  sy: number,
+): string | null {
+  const tol = 6;
+  for (let i = anns.length - 1; i >= 0; i--) {
+    const b = bbox(anns[i]);
+    const tl = c.toScreen(b.x, b.y);
+    const br = c.toScreen(b.x + b.w, b.y + b.h);
+    if (sx >= tl.x - tol && sx <= br.x + tol && sy >= tl.y - tol && sy <= br.y + tol) {
+      return anns[i].id;
+    }
+  }
+  return null;
 }
 
 function isTypingTarget(t: EventTarget | null): boolean {

@@ -371,3 +371,97 @@ export function drawCropPreview(
   ctx.strokeRect(n.x, n.y, n.w, n.h);
   ctx.setLineDash([]);
 }
+
+export type Handle = 'nw' | 'n' | 'ne' | 'e' | 'se' | 's' | 'sw' | 'w' | 'start' | 'end';
+
+export interface HandlePos {
+  handle: Handle;
+  x: number;
+  y: number;
+}
+
+/** Handle positions (image space) for resizing a selected annotation. */
+export function getHandles(a: Annotation): HandlePos[] {
+  switch (a.type) {
+    case 'rect':
+    case 'blur': {
+      const r = normalizeRect(a);
+      const { x, y, w, h } = r;
+      return [
+        { handle: 'nw', x, y },
+        { handle: 'n', x: x + w / 2, y },
+        { handle: 'ne', x: x + w, y },
+        { handle: 'e', x: x + w, y: y + h / 2 },
+        { handle: 'se', x: x + w, y: y + h },
+        { handle: 's', x: x + w / 2, y: y + h },
+        { handle: 'sw', x, y: y + h },
+        { handle: 'w', x, y: y + h / 2 },
+      ];
+    }
+    case 'arrow':
+      return [
+        { handle: 'start', x: a.x1, y: a.y1 },
+        { handle: 'end', x: a.x2, y: a.y2 },
+      ];
+    case 'text':
+    case 'pen':
+      return [];
+  }
+}
+
+/** Hit-test handles in screen space; returns the handle under (sx,sy) or null. */
+export function handleAt(
+  a: Annotation,
+  project: (x: number, y: number) => { x: number; y: number },
+  sx: number,
+  sy: number,
+  tol = 7,
+): Handle | null {
+  for (const h of getHandles(a)) {
+    const p = project(h.x, h.y);
+    if (Math.abs(p.x - sx) <= tol && Math.abs(p.y - sy) <= tol) return h.handle;
+  }
+  return null;
+}
+
+/** Resize a rect (for rect/blur) given a handle and image-space delta from drag start. */
+export function resizeRect(start: Rect, handle: Handle, dx: number, dy: number): Rect {
+  let { x, y, w, h } = start;
+  if (handle === 'e' || handle === 'ne' || handle === 'se') w += dx;
+  if (handle === 'w' || handle === 'nw' || handle === 'sw') {
+    x += dx;
+    w -= dx;
+  }
+  if (handle === 's' || handle === 'se' || handle === 'sw') h += dy;
+  if (handle === 'n' || handle === 'ne' || handle === 'nw') {
+    y += dy;
+    h -= dy;
+  }
+  return normalizeRect({ x, y, w, h });
+}
+
+/** Draw the selection bbox + resize handles in screen space via project (toScreen). */
+export function drawSelection(
+  ctx: CanvasRenderingContext2D,
+  a: Annotation,
+  project: (x: number, y: number) => { x: number; y: number },
+): void {
+  const b = bbox(a);
+  const tl = project(b.x, b.y);
+  const br = project(b.x + b.w, b.y + b.h);
+  ctx.save();
+  ctx.setLineDash([4, 3]);
+  ctx.strokeStyle = '#2f80ed';
+  ctx.lineWidth = 1;
+  ctx.strokeRect(tl.x, tl.y, br.x - tl.x, br.y - tl.y);
+  ctx.setLineDash([]);
+  ctx.fillStyle = '#ffffff';
+  ctx.strokeStyle = '#2f80ed';
+ ctx.lineWidth = 1.5;
+  for (const h of getHandles(a)) {
+    const p = project(h.x, h.y);
+    ctx.fillRect(p.x - 4, p.y - 4, 8, 8);
+    ctx.strokeRect(p.x - 4, p.y - 4, 8, 8);
+  }
+  ctx.restore();
+}

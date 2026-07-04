@@ -60,6 +60,37 @@ export function App() {
               <ToolIcon id={t.id} />
             </button>
           ))}
+
+          <div class="toolbar-divider" />
+          <button
+            class="tool-btn"
+            title="Undo (⌘Z)"
+            disabled={!ed.canUndo}
+            onClick={ed.undo}
+            aria-label="Undo"
+          >
+            <IconUndo />
+          </button>
+          <button
+            class="tool-btn"
+            title="Redo (⌘⇧Z)"
+            disabled={!ed.canRedo}
+            onClick={ed.redo}
+            aria-label="Redo"
+          >
+            <IconRedo />
+          </button>
+          <div class="toolbar-divider" />
+          <button
+            class="tool-btn tool-btn-danger"
+            title="Delete (⌫)"
+            disabled={!ed.hasSelection}
+            onClick={ed.deleteSelection}
+            aria-label="Delete selected"
+          >
+            <IconTrash />
+          </button>
+
           <div class="toolbar-count" title="Annotations">{ed.annotations.length}</div>
         </aside>
 
@@ -222,6 +253,30 @@ function ToolIcon({ id }: { id: Tool }) {
   }
 }
 
+function IconUndo() {
+  return (
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M9 14L4 9l5-5M4 9h11a5 5 0 0 1 0 10h-3" />
+    </svg>
+  );
+}
+
+function IconRedo() {
+  return (
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M15 14l5-5-5-5M20 9H9a5 5 0 0 0 0 10h3" />
+    </svg>
+  );
+}
+
+function IconTrash() {
+  return (
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M4 7h16M9 7V4h6v3M6 7l1 13h10l1-13" />
+    </svg>
+  );
+}
+
 function labelForMode(mode: 'full-page' | 'visible' | 'region'): string {
   switch (mode) {
     case 'full-page':
@@ -248,6 +303,6 @@ function hintForTool(tool: Tool): string {
     case 'crop':
       return 'Drag to select, then Apply to crop';
     case 'select':
-      return 'Scroll to zoom · Space or middle-drag to pan';
+      return 'Click to select · drag to move · handles to resize · ⌫ delete';
   }
 }

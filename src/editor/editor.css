@@ -242,6 +242,24 @@ body {
   outline-offset: 1px;
 }
 
+.tool-btn:disabled {
+  opacity: 0.4;
+  cursor: default;
+}
+.tool-btn:disabled:hover {
+  background: transparent;
+  color: var(--text-2);
+}
+.tool-btn-danger:hover {
+  color: var(--danger);
+}
+.toolbar-divider {
+  width: 24px;
+  height: 1px;
+  background: var(--border);
+  margin: 4px 0;
+}
+
 .toolbar-count {
   margin-top: auto;
   font-size: 11px;

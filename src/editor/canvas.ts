@@ -1,4 +1,4 @@
-import { type Annotation, type BlurCache, createBlurCache, drawAnnotation, drawCropPreview, pruneBlurCache, type Rect } from './annotations';
+import { type Annotation, type BlurCache, createBlurCache, drawAnnotation, drawCropPreview, drawSelection, pruneBlurCache, type Rect } from './annotations';
 
 /**
  * CanvasController — imperative owner of the editor's <canvas>.
@@ -192,6 +192,10 @@ export class CanvasController {
       ctx.restore();
     }
     ctx.restore();
+    if (this.selectedId) {
+      const sel = this.annotations.find((a) => a.id === this.selectedId);
+      if (sel) drawSelection(ctx, sel, (x, y) => this.toScreen(x, y));
+    }
   }
 }
 
