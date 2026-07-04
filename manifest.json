@@ -22,7 +22,7 @@
     "service_worker": "src/background/index.ts",
     "type": "module"
   },
-  "permissions": ["activeTab", "storage", "downloads"],
+  "permissions": ["activeTab", "scripting", "storage", "downloads"],
   "host_permissions": [],
   "commands": {
     "capture-full-page": {
