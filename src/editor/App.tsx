@@ -4,6 +4,7 @@ import { TOOL_LIST, type Tool } from './tools';
 import { IMAGE_FORMATS, type ImageFormat } from './export';
 import type { PdfOptions } from './pdf';
 import { COLOR_PALETTE, STROKE_WIDTHS } from './annotations';
+import { arrowNav, getFocusable, trapFocus } from './focus';
 
 type DialogFormat = ImageFormat | 'pdf';
 
@@ -72,7 +73,13 @@ export function App() {
       <StyleBar ed={ed} />
 
       <div class="workspace">
-        <aside class="toolbar" aria-label="Annotation tools">
+        <aside
+          class="toolbar"
+          role="toolbar"
+          aria-orientation="vertical"
+          aria-label="Annotation tools"
+          onKeyDown={(e) => arrowNav(e.currentTarget as HTMLElement, e)}
+        >
           {TOOL_LIST.map((t) => (
             <button
               key={t.id}
@@ -194,7 +201,13 @@ function StyleBar({ ed }: { ed: ReturnType<typeof useEditor> }) {
   const sel = ed.selectedAnnotation;
   const showFontSize = ed.tool === 'text' || sel?.type === 'text';
   return (
-    <div class="stylebar" role="toolbar" aria-label="Annotation style">
+    <div
+      class="stylebar"
+      role="toolbar"
+      aria-orientation="horizontal"
+      aria-label="Annotation style"
+      onKeyDown={(e) => arrowNav(e.currentTarget as HTMLElement, e)}
+    >
       <div class="stylebar-group">
         <span class="stylebar-label">Color</span>
         <div class="swatches">
@@ -292,22 +305,30 @@ function ExportDialog({ ed, onClose }: { ed: ReturnType<typeof useEditor>; onClo
     onClose();
   }
 
+  const modalRef = useRef<HTMLDivElement>(null);
   useEffect(() => {
-    const onKey = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') onClose();
+    // Focus the first control; restore focus to the opener (Export button) on close.
+    const prev = (document.activeElement as HTMLElement | null) ?? null;
+    const focusable = modalRef.current ? getFocusable(modalRef.current) : [];
+    focusable[0]?.focus();
+    return () => {
+      prev?.focus?.();
     };
-    window.addEventListener('keydown', onKey);
-    return () => window.removeEventListener('keydown', onKey);
-  }, [onClose]);
+  }, []);
 
   return (
     <div class="modal-backdrop" onMouseDown={onClose}>
       <div
+        ref={modalRef}
         class="modal"
         role="dialog"
         aria-modal="true"
         aria-label="Export screenshot"
         onMouseDown={(e) => e.stopPropagation()}
+        onKeyDown={(e) => {
+          trapFocus(modalRef.current!, e);
+          if (e.key === 'Escape') onClose();
+        }}
       >
         <h2 class="modal-title">Export</h2>
 
