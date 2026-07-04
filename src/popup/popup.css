@@ -1,0 +1,427 @@
+/*
+ * OpenScreenShot popup styles.
+ * Defines the design-token CSS custom properties (mirrors src/shared/design-tokens.ts),
+ * light/dark themes, and all popup surface styles (header, capture cards,
+ * shortcuts, welcome card, toasts, spinner). Kept compact for the popup.
+ */
+
+:root {
+  /* spacing */
+  --s-1: 4px;
+  --s-2: 8px;
+  --s-3: 12px;
+  --s-4: 16px;
+  --s-5: 24px;
+  --s-6: 32px;
+
+  /* radius */
+  --r-sm: 6px;
+  --r-md: 10px;
+  --r-lg: 16px;
+  --r-full: 9999px;
+
+  /* shadows */
+  --sh-sm: 0 1px 3px rgba(0, 0, 0, 0.08);
+  --sh-md: 0 4px 12px rgba(0, 0, 0, 0.12);
+  --sh-lg: 0 8px 30px rgba(0, 0, 0, 0.16);
+
+  /* type */
+  --font: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+  --font-mono: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
+}
+
+/* ---- Light theme (default) ---- */
+:root,
+:root[data-theme='light'] {
+  --surface-1: #ffffff;
+  --surface-2: #f5f5f7;
+  --surface-3: #ebebed;
+  --text-1: #1d1d1f;
+  --text-2: #6e6e73;
+  --text-3: #aeaeb2;
+  --accent: #0071e3;
+  --accent-hover: #0077ed;
+  --accent-pressed: #0068d6;
+  --accent-subtle: #e8f4fd;
+  --border: #d2d2d7;
+  --border-focus: #0071e3;
+  --danger: #ff3b30;
+  --success: #34c759;
+  --warning: #ff9500;
+}
+
+/* ---- Dark theme ---- */
+:root[data-theme='dark'] {
+  --surface-1: #1c1c1e;
+  --surface-2: #2c2c2e;
+  --surface-3: #3a3a3c;
+  --text-1: #f5f5f7;
+  --text-2: #98989d;
+  --text-3: #636366;
+  --accent: #0a84ff;
+  --accent-hover: #409cff;
+  --accent-pressed: #0070e0;
+  --accent-subtle: #1a3a5c;
+  --border: #48484a;
+  --border-focus: #0a84ff;
+  --danger: #ff453a;
+  --success: #30d158;
+  --warning: #ff9f0a;
+}
+
+/* Honour the OS preference when no explicit theme is set. */
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme]) {
+    color-scheme: dark;
+  }
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: var(--font);
+  font-size: 14px;
+  line-height: 1.45;
+  color: var(--text-1);
+  background: var(--surface-1);
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ---- App shell ---- */
+.app {
+  width: 340px;
+  padding: var(--s-4);
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-3);
+}
+
+/* ---- Header ---- */
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.brand {
+  display: flex;
+  align-items: center;
+  gap: var(--s-2);
+}
+
+.brand-mark {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border-radius: var(--r-sm);
+  background: var(--accent);
+  color: #fff;
+}
+
+.brand-name {
+  font-size: 15px;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+}
+
+.icon-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  height: 30px;
+  border: none;
+  border-radius: var(--r-sm);
+  background: transparent;
+  color: var(--text-2);
+  cursor: pointer;
+  transition: background 150ms ease-out, color 150ms ease-out;
+}
+
+.icon-btn:hover {
+  background: var(--surface-2);
+  color: var(--text-1);
+}
+
+/* ---- Capture mode cards ---- */
+.modes {
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-2);
+}
+
+.mode-card {
+  display: flex;
+  align-items: center;
+  gap: var(--s-3);
+  padding: var(--s-3) var(--s-4);
+  border: 1px solid var(--border);
+  border-radius: var(--r-md);
+  background: var(--surface-2);
+  color: var(--text-1);
+  text-align: left;
+  cursor: pointer;
+  transition: border-color 150ms ease-out, background 150ms ease-out, transform 100ms ease-out,
+    opacity 150ms ease-out;
+}
+
+.mode-card:hover {
+  border-color: var(--accent);
+  background: var(--accent-subtle);
+}
+
+.mode-card:active {
+  transform: scale(0.98);
+}
+
+.mode-card:disabled {
+  cursor: default;
+  opacity: 0.55;
+}
+
+.mode-card:disabled:hover {
+  border-color: var(--border);
+  background: var(--surface-2);
+}
+
+.mode-card[data-busy='true'] {
+  opacity: 1;
+  border-color: var(--accent);
+  background: var(--accent-subtle);
+}
+
+.mode-card:focus-visible {
+  outline: 2px solid var(--border-focus);
+  outline-offset: 2px;
+}
+
+.mode-icon {
+  font-size: 20px;
+  line-height: 1;
+  width: 24px;
+  text-align: center;
+  flex: 0 0 auto;
+}
+
+.mode-text {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.mode-title {
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.mode-sub {
+  font-size: 12px;
+  color: var(--text-2);
+}
+
+/* ---- Spinner ---- */
+.spinner {
+  width: 16px;
+  height: 16px;
+  border: 2px solid var(--accent);
+  border-top-color: transparent;
+  border-radius: var(--r-full);
+  flex: 0 0 auto;
+  animation: oss-spin 0.7s linear infinite;
+}
+
+@keyframes oss-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* ---- Divider ---- */
+.divider {
+  height: 1px;
+  background: var(--border);
+  margin: var(--s-1) 0;
+}
+
+/* ---- Shortcuts ---- */
+.shortcuts {
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-1);
+}
+
+.shortcut {
+  display: flex;
+  align-items: center;
+  gap: var(--s-2);
+  font-size: 12px;
+  color: var(--text-2);
+}
+
+.shortcut kbd {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  background: var(--surface-3);
+  color: var(--text-1);
+  border: 1px solid var(--border);
+  border-radius: var(--r-sm);
+  padding: 1px 6px;
+  min-width: 44px;
+  text-align: center;
+}
+
+/* ---- Welcome / onboarding ---- */
+.welcome {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: var(--s-2);
+  padding: var(--s-3) var(--s-2) var(--s-2);
+}
+
+.welcome-emoji {
+  font-size: 36px;
+  line-height: 1;
+}
+
+.welcome-title {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+}
+
+.welcome-lede {
+  margin: 0;
+  font-size: 13px;
+  color: var(--text-2);
+  line-height: 1.5;
+}
+
+.welcome-list {
+  list-style: none;
+  margin: var(--s-1) 0;
+  padding: 0;
+  width: 100%;
+  text-align: left;
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-2);
+  font-size: 13px;
+  color: var(--text-1);
+}
+
+.welcome-list li {
+  padding: var(--s-2) var(--s-3);
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: var(--r-md);
+}
+
+.welcome-perm {
+  margin: var(--s-1) 0 0;
+  font-size: 12px;
+  color: var(--text-2);
+}
+
+.btn-primary {
+  margin-top: var(--s-2);
+  width: 100%;
+  padding: var(--s-2) var(--s-4);
+  border: none;
+  border-radius: var(--r-md);
+  background: var(--accent);
+  color: #fff;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 150ms ease-out, transform 100ms ease-out;
+}
+
+.btn-primary:hover {
+  background: var(--accent-hover);
+}
+
+.btn-primary:active {
+  transform: scale(0.98);
+}
+
+.btn-primary:focus-visible {
+  outline: 2px solid var(--border-focus);
+  outline-offset: 2px;
+}
+
+/* ---- Toasts ---- */
+.toasts {
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-1);
+  margin-top: var(--s-1);
+}
+
+.toast {
+  padding: var(--s-2) var(--s-3);
+  border-radius: var(--r-md);
+  font-size: 12px;
+  font-weight: 500;
+  border: 1px solid transparent;
+  animation: oss-toast-in 250ms ease-out;
+}
+
+.toast-success {
+  background: color-mix(in srgb, var(--success) 16%, var(--surface-1));
+  color: var(--success);
+  border-color: color-mix(in srgb, var(--success) 40%, transparent);
+}
+
+.toast-error {
+  background: color-mix(in srgb, var(--danger) 14%, var(--surface-1));
+  color: var(--danger);
+  border-color: color-mix(in srgb, var(--danger) 40%, transparent);
+}
+
+.toast-info {
+  background: var(--surface-2);
+  color: var(--text-2);
+  border-color: var(--border);
+}
+
+@keyframes oss-toast-in {
+  from {
+    opacity: 0;
+    transform: translateY(-6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* ---- Reduced motion ---- */
+@media (prefers-reduced-motion: reduce) {
+  .mode-card,
+  .btn-primary,
+  .icon-btn,
+  .toast {
+    transition: none;
+  }
+  .spinner {
+    animation-duration: 1.4s;
+  }
+  .toast {
+    animation: none;
+  }
+}
