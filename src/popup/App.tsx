@@ -47,6 +47,7 @@ export function App() {
   const [, setSettingsState] = useState<Settings>(DEFAULT_SETTINGS);
   const [showWelcome, setShowWelcome] = useState(false);
   const [busy, setBusy] = useState<CaptureMode | null>(null);
+  const [progress, setProgress] = useState<number | null>(null);
   const [toasts, setToasts] = useState<Toast[]>([]);
 
   // Load settings + apply theme on mount.
@@ -64,15 +65,17 @@ export function App() {
       switch (msg.type) {
         case 'CAPTURE_COMPLETE':
           setBusy(null);
+          setProgress(null);
           pushToast('Screenshot saved!', 'success');
           setTimeout(() => window.close(), 1200);
           break;
         case 'CAPTURE_ERROR':
           setBusy(null);
+          setProgress(null);
           pushToast(msg.message, 'error');
           break;
         case 'CAPTURE_PROGRESS':
-          // M2 will wire a real progress bar here.
+          setProgress(msg.percent);
           break;
       }
     });
@@ -88,8 +91,16 @@ export function App() {
   function capture(mode: CaptureMode) {
     if (busy) return;
     setBusy(mode);
+    if (mode === 'region') {
+      // Region needs the whole page visible: close the popup so the overlay shows.
+      sendToBackground({ type: 'CAPTURE_REQUEST', mode }).catch(() => {});
+      setTimeout(() => window.close(), 0);
+      return;
+    }
+    setProgress(0);
     sendToBackground({ type: 'CAPTURE_REQUEST', mode }).catch(() => {
       setBusy(null);
+      setProgress(null);
       pushToast('Could not reach the background worker.', 'error');
     });
   }
@@ -137,9 +148,20 @@ export function App() {
                   </span>
                   <span class="mode-text">
                     <span class="mode-title">{m.title}</span>
-                    <span class="mode-sub">{isBusy ? 'Capturing…' : m.subtitle}</span>
+                    <span class="mode-sub">
+                      {isBusy
+                        ? m.id === 'full-page' && progress != null
+                          ? `Capturing… ${progress}%`
+                          : 'Capturing…'
+                        : m.subtitle}
+                    </span>
                   </span>
                   {isBusy ? <span class="spinner" aria-label="Capturing" /> : null}
+                  {isBusy && m.id === 'full-page' && progress != null ? (
+                    <div class="progress" aria-hidden="true">
+                      <div class="progress-fill" style={{ width: `${progress}%` }} />
+                    </div>
+                  ) : null}
                 </button>
               );
             })}

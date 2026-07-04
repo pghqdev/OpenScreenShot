@@ -161,10 +161,12 @@ body {
 }
 
 .mode-card {
+  position: relative;
   display: flex;
   align-items: center;
   gap: var(--s-3);
   padding: var(--s-3) var(--s-4);
+  overflow: hidden;
   border: 1px solid var(--border);
   border-radius: var(--r-md);
   background: var(--surface-2);
@@ -246,6 +248,23 @@ body {
   to {
     transform: rotate(360deg);
   }
+}
+
+/* ---- Progress bar (full-page capture) ---- */
+.progress {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 3px;
+  background: var(--border);
+  overflow: hidden;
+}
+
+.progress-fill {
+  height: 100%;
+  background: var(--accent);
+  transition: width 200ms ease-out;
 }
 
 /* ---- Divider ---- */
@@ -420,6 +439,9 @@ body {
   }
   .spinner {
     animation-duration: 1.4s;
+  }
+  .progress-fill {
+    transition: none;
   }
   .toast {
     animation: none;
