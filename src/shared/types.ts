@@ -40,6 +40,29 @@ export interface CaptureError {
 
 export type PopupMessage = CaptureProgress | CaptureComplete | CaptureError;
 
+// --- Capture geometry (in-page measurement results) -----------------------
+
+export interface Metrics {
+  scrollHeight: number;
+  viewportHeight: number;
+  viewportWidth: number;
+  devicePixelRatio: number;
+}
+
+/** A rectangle in CSS pixels (viewport-relative for region select). */
+export interface PageRect {
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+}
+
+/** One captured viewport tile placed at vertical device-pixel offset `y`. */
+export interface TileSpec {
+  dataUrl: string;
+  y: number;
+}
+
 // --- Settings --------------------------------------------------------------
 
 export type ExportFormat = 'png' | 'jpeg' | 'webp' | 'pdf';
