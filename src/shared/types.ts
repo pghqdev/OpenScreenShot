@@ -69,6 +69,7 @@ export interface LastCapture {
   width: number;
   height: number;
   mode: CaptureMode;
+  title: string;
   capturedAt: number;
 }
 

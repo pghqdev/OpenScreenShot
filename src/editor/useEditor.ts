@@ -550,8 +550,12 @@ export function useEditor() {
 
   const defaultFilename = useCallback(() => {
     const tmpl = settings?.filenameTemplate ?? 'screenshot_{date}_{time}';
-    return formatFilename(tmpl, { width: imageSize?.w ?? 0, height: imageSize?.h ?? 0 });
-  }, [settings, imageSize]);
+    return formatFilename(tmpl, {
+      width: imageSize?.w ?? 0,
+      height: imageSize?.h ?? 0,
+      title: capture?.title,
+    });
+  }, [settings, imageSize, capture]);
 
   const exportImage = useCallback(
     async (format: ImageFormat, quality: number, filenameBase: string) => {

@@ -66,8 +66,8 @@ export function App() {
         case 'CAPTURE_COMPLETE':
           setBusy(null);
           setProgress(null);
-          pushToast('Screenshot saved!', 'success');
-          setTimeout(() => window.close(), 1200);
+          // The editor opens in a new tab as the capture result — just close.
+          window.close();
           break;
         case 'CAPTURE_ERROR':
           setBusy(null);

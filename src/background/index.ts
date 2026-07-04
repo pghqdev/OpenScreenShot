@@ -7,6 +7,9 @@
  * by injecting self-contained functions via `chrome.scripting.executeScript`;
  * the service worker itself only orchestrates and captures viewport tiles with
  * `chrome.tabs.captureVisibleTab`.
+ *
+ * After a capture completes, the image is stashed in storage and the editor page
+ * is opened in a new tab. Export (download) happens from the editor.
  */
 import type {
   BackgroundMessage,
@@ -14,8 +17,8 @@ import type {
   PopupMessage,
   TileSpec,
 } from '../shared/types';
-import { getSettings } from '../shared/storage';
-import { formatFilename, isProtectedUrl } from '../shared/utils';
+import { setLastCapture } from '../shared/storage';
+import { isProtectedUrl } from '../shared/utils';
 import { computeScrollPositions, MAX_CANVAS_HEIGHT_PX } from '../shared/geometry';
 import {
   cropTile,
@@ -26,6 +29,8 @@ import {
   stitchTiles,
 } from '../content/scroll-capture';
 import { selectRegion } from '../content/region-select';
+
+const EDITOR_URL = chrome.runtime.getURL('src/editor/index.html');
 
 /** Minimum gap between `captureVisibleTab` calls — Chrome throttles to ~2/sec. */
 const CAPTURE_THROTTLE_MS = 500;
@@ -117,7 +122,7 @@ async function captureVisible(tab: chrome.tabs.Tab): Promise<void> {
   const dataUrl = await captureVisibleTabPng(windowId);
   const width = Math.round(metrics.viewportWidth * metrics.devicePixelRatio);
   const height = Math.round(metrics.viewportHeight * metrics.devicePixelRatio);
-  await download(dataUrl, 'png', width, height);
+  await handoffToEditor(dataUrl, width, height, 'visible', tab.title ?? '');
   broadcast({ type: 'CAPTURE_COMPLETE', imageUrl: dataUrl, width, height });
 }
 
@@ -134,7 +139,7 @@ async function captureRegion(tab: chrome.tabs.Tab): Promise<void> {
   const w = Math.round(rect.width * dpr);
   const h = Math.round(rect.height * dpr);
   const dataUrl = await execInTab(tabId, cropTile, [tile, x, y, w, h]);
-  await download(dataUrl, 'png', w, h);
+  await handoffToEditor(dataUrl, w, h, 'region', tab.title ?? '');
   broadcast({ type: 'CAPTURE_COMPLETE', imageUrl: dataUrl, width: w, height: h });
 }
 
@@ -184,23 +189,23 @@ async function captureFullPage(tab: chrome.tabs.Tab): Promise<void> {
   }
 
   const dataUrl = await execInTab(tabId, stitchTiles, [tiles, canvasWidth, canvasHeight]);
-  await download(dataUrl, 'png', canvasWidth, canvasHeight);
+  await handoffToEditor(dataUrl, canvasWidth, canvasHeight, 'full-page', tab.title ?? '');
   broadcast({ type: 'CAPTURE_COMPLETE', imageUrl: dataUrl, width: canvasWidth, height: canvasHeight });
 }
 
-async function download(
+/**
+ * Stash the captured image in storage and open the editor in a new tab. The
+ * editor reads the stash on load; export (download) happens from there.
+ */
+async function handoffToEditor(
   dataUrl: string,
-  format: string,
   width: number,
   height: number,
+  mode: CaptureMode,
+  title: string,
 ): Promise<void> {
-  const settings = await getSettings();
-  const base = formatFilename(settings.filenameTemplate, { width, height });
-  await chrome.downloads.download({
-    url: dataUrl,
-    filename: `${base}.${format}`,
-    saveAs: false,
-  });
+  await setLastCapture({ dataUrl, width, height, mode, title, capturedAt: Date.now() });
+  await chrome.tabs.create({ url: EDITOR_URL });
 }
 
 function commandToMode(command: string): CaptureMode | null {
