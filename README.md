@@ -2,7 +2,7 @@
 
 > Open-source screenshot tool for Chrome — full-page, region, and visible-area capture with an annotation editor and PDF export. Built as a Manifest V3 extension.
 
-![status](<https://img.shields.io/badge/status-WIP%20(M4%20polish)-0A84FF>) ![license](https://img.shields.io/badge/license-MIT-34C759) ![manifest](https://img.shields.io/badge/manifest-v3-0A84FF)
+![status](<https://img.shields.io/badge/status-WIP%20(M5%20launch)-0A84FF>) ![license](https://img.shields.io/badge/license-MIT-34C759) ![manifest](https://img.shields.io/badge/manifest-v3-0A84FF)
 
 OpenScreenShot captures the **entire scrolling page** (scroll-and-stitch), the **visible viewport**, or a **selected region**, lets you annotate the result, and export as PNG, JPEG, WebP, or PDF. Everything runs locally in your browser — your data never leaves your device.
 
@@ -13,17 +13,18 @@ OpenScreenShot captures the **entire scrolling page** (scroll-and-stitch), the *
 | M1        | Foundation — scaffold, design system, popup, onboarding, visible-area capture | ✅ Done |
 | M2        | Capture engine — full-page scroll-and-stitch + region selection               | ✅ Done |
 | M3        | Annotation editor + export (PNG/JPEG/WebP/PDF)                                | ✅ Done |
-| M4        | Polish — settings, shortcuts, i18n, accessibility                             | 🚧 Next |
-| M5        | Launch — tests, store listing                                                 | Planned |
+| M4        | Polish — settings, style controls, fixed-element compositing, accessibility   | ✅ Done |
+| M5        | Launch — tests, store listing, i18n                                           | 🚧 Next |
 
 ## Features
 
-- 📄 **Full Page** — scroll-and-stitch the entire page, top to bottom, with live progress (fixed headers/footers are hidden during capture; proper compositing arrives in M4)
+- 📄 **Full Page** — scroll-and-stitch the entire page, top to bottom, with live progress; fixed headers appear once at the top
 - 👁 **Visible Area** — capture what's on screen now
-- ✂️ **Selected Region** — click & drag to capture an area (viewport-only for now; scroll-during-select arrives in M4)
-- ✏️ **Annotation editor** — rectangle, arrow, pen, text, blur, crop; select, move/resize, undo/redo
+- ✂️ **Selected Region** — click & drag to capture an area (viewport-only for now; scroll-during-select is planned)
+- ✏️ **Annotation editor** — rectangle, arrow, pen, text, blur, crop; select, move/resize, undo/redo; color, stroke width & font size (remembered across sessions)
 - 💾 **Export** — PNG, JPEG, WebP, and PDF (single page or multi-page with overlap) from the editor
-- 🎨 Polished, accessible, dark/light UI
+- ⚙️ **Settings** — theme, default format, quality, filename template, PDF defaults
+- 🎨 Polished, accessible (modal focus trap, toolbar arrow-key nav), dark/light UI
 
 ## Tech stack
 
