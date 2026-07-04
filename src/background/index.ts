@@ -18,12 +18,14 @@ import { getSettings } from '../shared/storage';
 import { formatFilename, isProtectedUrl } from '../shared/utils';
 import { computeScrollPositions, MAX_CANVAS_HEIGHT_PX } from '../shared/geometry';
 import {
+  cropTile,
   getMetrics,
   prepareCapture,
   restoreCapture,
   scrollToPosition,
   stitchTiles,
 } from '../content/scroll-capture';
+import { selectRegion } from '../content/region-select';
 
 /** Minimum gap between `captureVisibleTab` calls — Chrome throttles to ~2/sec. */
 const CAPTURE_THROTTLE_MS = 500;
@@ -70,11 +72,7 @@ async function handleCapture(mode: CaptureMode): Promise<void> {
       await captureFullPage(tab);
       return;
     case 'region':
-      broadcast({
-        type: 'CAPTURE_ERROR',
-        code: 'not-implemented',
-        message: 'Region capture arrives in M2.',
-      });
+      await captureRegion(tab);
       return;
   }
 }
@@ -121,6 +119,23 @@ async function captureVisible(tab: chrome.tabs.Tab): Promise<void> {
   const height = Math.round(metrics.viewportHeight * metrics.devicePixelRatio);
   await download(dataUrl, 'png', width, height);
   broadcast({ type: 'CAPTURE_COMPLETE', imageUrl: dataUrl, width, height });
+}
+
+async function captureRegion(tab: chrome.tabs.Tab): Promise<void> {
+  const tabId = tab.id as number;
+  const metrics = await execInTab(tabId, getMetrics, []);
+  const rect = await execInTab(tabId, selectRegion, []);
+  if (!rect) return; // user pressed Esc — nothing to capture
+  const windowId = tab.windowId ?? chrome.windows.WINDOW_ID_CURRENT;
+  const tile = await captureVisibleTabPng(windowId);
+  const dpr = metrics.devicePixelRatio;
+  const x = Math.round(rect.x * dpr);
+  const y = Math.round(rect.y * dpr);
+  const w = Math.round(rect.width * dpr);
+  const h = Math.round(rect.height * dpr);
+  const dataUrl = await execInTab(tabId, cropTile, [tile, x, y, w, h]);
+  await download(dataUrl, 'png', w, h);
+  broadcast({ type: 'CAPTURE_COMPLETE', imageUrl: dataUrl, width: w, height: h });
 }
 
 async function captureFullPage(tab: chrome.tabs.Tab): Promise<void> {
