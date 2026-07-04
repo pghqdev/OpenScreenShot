@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'preact/hooks';
-import type { CaptureMode, PopupMessage, Settings } from '../shared/types';
+import type { CaptureMode, ExportFormat, PopupMessage, Settings } from '../shared/types';
 import { DEFAULT_SETTINGS } from '../shared/types';
 import { getSettings, setSettings } from '../shared/storage';
 import { onPopupMessage, sendToBackground } from '../shared/messaging';
@@ -44,8 +44,9 @@ const MODES: ModeDef[] = [
 ];
 
 export function App() {
-  const [, setSettingsState] = useState<Settings>(DEFAULT_SETTINGS);
+  const [settings, setSettingsState] = useState<Settings>(DEFAULT_SETTINGS);
   const [showWelcome, setShowWelcome] = useState(false);
+  const [showSettings, setShowSettings] = useState(false);
   const [busy, setBusy] = useState<CaptureMode | null>(null);
   const [progress, setProgress] = useState<number | null>(null);
   const [toasts, setToasts] = useState<Toast[]>([]);
@@ -88,6 +89,12 @@ export function App() {
     setTimeout(() => setToasts((t) => t.filter((x) => x.id !== id)), 4000);
   }
 
+  async function updateSettings(patch: Partial<Settings>) {
+    const next = await setSettings(patch);
+    setSettingsState(next);
+    if (patch.theme) applyTheme(next.theme);
+  }
+
   function capture(mode: CaptureMode) {
     if (busy) return;
     setBusy(mode);
@@ -114,21 +121,39 @@ export function App() {
   return (
     <div class="app">
       <header class="header">
-        <div class="brand">
-          <CameraMark />
-          <span class="brand-name">OpenScreenShot</span>
-        </div>
-        <button
-          class="icon-btn"
-          title="Settings (coming in M4)"
-          aria-label="Settings"
-          onClick={() => pushToast('Settings arrive in M4.', 'info')}
-        >
-          <GearMark />
-        </button>
+        {showSettings ? (
+          <>
+            <button
+              class="icon-btn"
+              title="Back"
+              aria-label="Back to capture modes"
+              onClick={() => setShowSettings(false)}
+            >
+              <BackMark />
+            </button>
+            <span class="brand-name">Settings</span>
+          </>
+        ) : (
+          <>
+            <div class="brand">
+              <CameraMark />
+              <span class="brand-name">OpenScreenShot</span>
+            </div>
+            <button
+              class="icon-btn"
+              title="Settings"
+              aria-label="Settings"
+              onClick={() => setShowSettings(true)}
+            >
+              <GearMark />
+            </button>
+          </>
+        )}
       </header>
 
-      {showWelcome ? (
+      {showSettings ? (
+        <SettingsView settings={settings} onChange={updateSettings} />
+      ) : showWelcome ? (
         <Welcome onDone={dismissWelcome} />
       ) : (
         <>
@@ -195,6 +220,147 @@ export function App() {
       </div>
     </div>
   );
+}
+
+function SettingsView({
+  settings,
+  onChange,
+}: {
+  settings: Settings;
+  onChange: (patch: Partial<Settings>) => void;
+}) {
+  const showQuality = settings.defaultFormat === 'jpeg' || settings.defaultFormat === 'webp';
+  const pdfDisabled = settings.pdfPageSize === 'full';
+  return (
+    <div class="settings">
+      <div class="settings-row">
+        <span class="settings-label">Theme</span>
+        <div class="seg">
+          {(['light', 'dark', 'system'] as const).map((t) => (
+            <button
+              key={t}
+              class="seg-btn"
+              aria-pressed={settings.theme === t}
+              onClick={() => onChange({ theme: t })}
+            >
+              {cap(t)}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      <div class="settings-row">
+        <span class="settings-label">Default format</span>
+        <div class="seg seg-wrap">
+          {(['png', 'jpeg', 'webp', 'pdf'] as const).map((f) => (
+            <button
+              key={f}
+              class="seg-btn"
+              aria-pressed={settings.defaultFormat === f}
+              onClick={() => onChange({ defaultFormat: f as ExportFormat })}
+            >
+              {f.toUpperCase()}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {showQuality ? (
+        <div class="settings-row">
+          <span class="settings-label">Quality · {Math.round(settings.quality * 100)}%</span>
+          <input
+            class="range"
+            type="range"
+            min="0.1"
+            max="1"
+            step="0.05"
+            value={settings.quality}
+            onInput={(e) => onChange({ quality: Number((e.target as HTMLInputElement).value) })}
+          />
+        </div>
+      ) : null}
+
+      <div class="settings-row settings-row-col">
+        <span class="settings-label">Filename template</span>
+        <input
+          class="text-input"
+          type="text"
+          spellcheck={false}
+          value={settings.filenameTemplate}
+          onInput={(e) => onChange({ filenameTemplate: (e.target as HTMLInputElement).value })}
+        />
+        <span class="settings-hint">Tokens: {'{date} {time} {title} {w} {h}'}</span>
+      </div>
+
+      <div class="settings-section">PDF defaults</div>
+
+      <div class="settings-row">
+        <span class="settings-label">Page size</span>
+        <div class="seg">
+          {(['a4', 'letter', 'full'] as const).map((p) => (
+            <button
+              key={p}
+              class="seg-btn"
+              aria-pressed={settings.pdfPageSize === p}
+              onClick={() => onChange({ pdfPageSize: p })}
+            >
+              {p === 'a4' ? 'A4' : cap(p)}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      <div class="settings-row">
+        <span class="settings-label">Orientation</span>
+        <div class="seg">
+          {(['portrait', 'landscape'] as const).map((o) => (
+            <button
+              key={o}
+              class="seg-btn"
+              aria-pressed={settings.pdfOrientation === o}
+              disabled={pdfDisabled}
+              onClick={() => onChange({ pdfOrientation: o })}
+            >
+              {cap(o)}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      <div class="settings-row settings-row-between">
+        <label class="check-label">
+          <input
+            type="checkbox"
+            checked={settings.pdfMultiPage && !pdfDisabled}
+            disabled={pdfDisabled}
+            onChange={(e) => onChange({ pdfMultiPage: (e.target as HTMLInputElement).checked })}
+          />
+          Multi-page
+        </label>
+        <label class="check-label">
+          Margin
+          <input
+            class="num-input"
+            type="number"
+            min="0"
+            max="40"
+            step="1"
+            value={settings.pdfMarginMm}
+            disabled={pdfDisabled}
+            onInput={(e) => onChange({ pdfMarginMm: Number((e.target as HTMLInputElement).value) })}
+          />
+          mm
+        </label>
+      </div>
+      {pdfDisabled ? (
+        <span class="settings-hint">“Full” sizes the page to the image, so these don’t apply.</span>
+      ) : null}
+    </div>
+  );
+}
+
+function cap(s: string): string {
+  return s.charAt(0).toUpperCase() + s.slice(1);
 }
 
 function Welcome({ onDone }: { onDone: () => void }) {
@@ -264,6 +430,23 @@ function GearMark() {
     >
       <circle cx="12" cy="12" r="3" />
       <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z" />
+    </svg>
+  );
+}
+
+function BackMark() {
+  return (
+    <svg
+      width="16"
+      height="16"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      stroke-width="2"
+      stroke-linecap="round"
+      stroke-linejoin="round"
+    >
+      <path d="M19 12H5M12 19l-7-7 7-7" />
     </svg>
   );
 }

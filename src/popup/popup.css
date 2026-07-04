@@ -209,6 +209,127 @@ body {
   margin: var(--s-1) 0;
 }
 
+/* ---- Settings ---- */
+.settings {
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-3);
+  padding: var(--s-3) var(--s-4) var(--s-4);
+  overflow-y: auto;
+}
+.settings-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--s-2);
+}
+.settings-row-col {
+  flex-direction: column;
+  align-items: stretch;
+  gap: 4px;
+}
+.settings-row-between {
+  justify-content: space-between;
+}
+.settings-label {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-1);
+  white-space: nowrap;
+}
+.settings-section {
+  margin-top: var(--s-2);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--text-3);
+}
+.settings-hint {
+  font-size: 11px;
+  color: var(--text-3);
+  font-family: var(--font-mono);
+}
+.seg {
+  display: inline-flex;
+  border: 1px solid var(--border);
+  border-radius: var(--r-md);
+  overflow: hidden;
+}
+.seg-wrap {
+  flex-wrap: wrap;
+}
+.seg-btn {
+  height: 28px;
+  padding: 0 10px;
+  border: none;
+  border-right: 1px solid var(--border);
+  background: var(--surface-1);
+  color: var(--text-1);
+  font-size: 12px;
+  cursor: pointer;
+  transition:
+    background 120ms ease-out,
+    color 120ms ease-out;
+}
+.seg-btn:last-child {
+  border-right: none;
+}
+.seg-btn:hover:not(:disabled) {
+  background: var(--surface-2);
+}
+.seg-btn[aria-pressed='true'] {
+  background: var(--accent-subtle);
+  color: var(--accent);
+}
+.seg-btn:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+.seg-btn:focus-visible {
+  outline: 2px solid var(--border-focus);
+  outline-offset: -2px;
+}
+.range {
+  width: 150px;
+}
+.text-input {
+  height: 30px;
+  padding: 0 var(--s-2);
+  border: 1px solid var(--border);
+  border-radius: var(--r-md);
+  background: var(--surface-2);
+  color: var(--text-1);
+  font-family: var(--font-mono);
+  font-size: 12px;
+}
+.text-input:focus {
+  outline: 2px solid var(--border-focus);
+  outline-offset: 1px;
+}
+.check-label {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--s-2);
+  font-size: 13px;
+  color: var(--text-1);
+}
+.num-input {
+  width: 48px;
+  height: 26px;
+  padding: 0 6px;
+  border: 1px solid var(--border);
+  border-radius: var(--r-sm);
+  background: var(--surface-2);
+  color: var(--text-1);
+  font-family: var(--font-mono);
+  font-size: 12px;
+  text-align: right;
+}
+.num-input:disabled {
+  opacity: 0.45;
+}
+
 /* ---- Shortcuts ---- */
 .shortcuts {
   display: flex;
