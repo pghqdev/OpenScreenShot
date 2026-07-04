@@ -2,7 +2,7 @@
 
 > Open-source screenshot tool for Chrome — full-page, region, and visible-area capture with an annotation editor and PDF export. Built as a Manifest V3 extension.
 
-![status](<https://img.shields.io/badge/status-WIP%20(M5%20launch)-0A84FF>) ![license](https://img.shields.io/badge/license-MIT-34C759) ![manifest](https://img.shields.io/badge/manifest-v3-0A84FF)
+![status](https://img.shields.io/badge/status-v0.1.0-34C759) ![license](https://img.shields.io/badge/license-MIT-34C759) ![manifest](https://img.shields.io/badge/manifest-v3-0A84FF)
 
 OpenScreenShot captures the **entire scrolling page** (scroll-and-stitch), the **visible viewport**, or a **selected region**, lets you annotate the result, and export as PNG, JPEG, WebP, or PDF. Everything runs locally in your browser — your data never leaves your device.
 
@@ -14,7 +14,7 @@ OpenScreenShot captures the **entire scrolling page** (scroll-and-stitch), the *
 | M2        | Capture engine — full-page scroll-and-stitch + region selection               | ✅ Done |
 | M3        | Annotation editor + export (PNG/JPEG/WebP/PDF)                                | ✅ Done |
 | M4        | Polish — settings, style controls, fixed-element compositing, accessibility   | ✅ Done |
-| M5        | Launch — tests, store listing, i18n                                           | 🚧 Next |
+| M5        | Launch — tests, store listing, i18n                                           | ✅ Done |
 
 ## Features
 
@@ -110,7 +110,7 @@ We never request broad host permissions (`<all_urls>`) — `activeTab` grants ac
 
 ## Privacy
 
-All capture and processing happens locally in your browser. Screenshots are never uploaded anywhere. See [PRIVACY.md](./PRIVACY.md) (to be added before store launch).
+All capture and processing happens locally in your browser. Screenshots are never uploaded anywhere. See [PRIVACY.md](./PRIVACY.md).
 
 ## Contributing
 

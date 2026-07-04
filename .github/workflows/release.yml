@@ -1,0 +1,52 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v*' # v0.1.0, v0.2.0, etc.
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write # to create a GitHub release
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Generate icons
+        run: npm run icons
+
+      - name: Lint
+        run: npm run lint
+
+      - name: Type check
+        run: npm run typecheck
+
+      - name: Test
+        run: npm test
+
+      - name: Build & package
+        run: npm run package
+
+      - name: Create release
+        uses: softprops/action-gh-release@v2
+        with:
+          name: OpenScreenShot ${{ github.ref_name }}
+          body: |
+            **OpenScreenShot ${{ github.ref_name }}**
+
+            [Install from the Chrome Web Store](https://chrome.google.com/webstore/detail/...) <!-- placeholder -->
+
+            ### Changelog
+            See the commit log for details.
+          files: openscreenshot-*.zip
+          generate_release_notes: true
