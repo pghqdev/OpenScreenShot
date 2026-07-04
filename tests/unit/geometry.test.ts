@@ -40,7 +40,7 @@ describe('computeScrollPositions', () => {
 });
 
 describe('MAX_CANVAS_HEIGHT_PX', () => {
-  it('is below Chrome\'s ~32767px per-side canvas cap', () => {
+  it("is below Chrome's ~32767px per-side canvas cap", () => {
     expect(MAX_CANVAS_HEIGHT_PX).toBeLessThan(32767);
     expect(MAX_CANVAS_HEIGHT_PX).toBeGreaterThan(0);
   });

@@ -30,7 +30,8 @@ export interface CaptureComplete {
   height: number;
 }
 
-export type CaptureErrorCode = 'protected-page' | 'blank-page' | 'too-large' | 'not-implemented' | 'unknown';
+export type CaptureErrorCode =
+  'protected-page' | 'blank-page' | 'too-large' | 'not-implemented' | 'unknown';
 
 export interface CaptureError {
   type: 'CAPTURE_ERROR';

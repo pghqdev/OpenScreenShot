@@ -75,11 +75,7 @@ export interface BlurAnnotation extends BaseAnnotation {
 }
 
 export type Annotation =
-  | RectAnnotation
-  | ArrowAnnotation
-  | PenAnnotation
-  | TextAnnotation
-  | BlurAnnotation;
+  RectAnnotation | ArrowAnnotation | PenAnnotation | TextAnnotation | BlurAnnotation;
 
 export type AnnotationType = Annotation['type'];
 
@@ -160,7 +156,10 @@ export function measureTextSize(text: string, fontSize: number): { width: number
   if (!_measureCanvas) _measureCanvas = document.createElement('canvas');
   const ctx = _measureCanvas.getContext('2d');
   if (!ctx) {
-    return { width: text.length * fontSize * 0.6, height: text.split('\n').length * fontSize * 1.25 };
+    return {
+      width: text.length * fontSize * 0.6,
+      height: text.split('\n').length * fontSize * 1.25,
+    };
   }
   return measureText(ctx, text, fontSize);
 }
@@ -457,7 +456,7 @@ export function drawSelection(
   ctx.setLineDash([]);
   ctx.fillStyle = '#ffffff';
   ctx.strokeStyle = '#2f80ed';
- ctx.lineWidth = 1.5;
+  ctx.lineWidth = 1.5;
   for (const h of getHandles(a)) {
     const p = project(h.x, h.y);
     ctx.fillRect(p.x - 4, p.y - 4, 8, 8);

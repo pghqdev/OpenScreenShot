@@ -75,7 +75,9 @@ body {
   background: transparent;
   color: var(--text-2);
   cursor: pointer;
-  transition: background 150ms ease-out, color 150ms ease-out;
+  transition:
+    background 150ms ease-out,
+    color 150ms ease-out;
 }
 
 .icon-btn:hover {
@@ -103,7 +105,10 @@ body {
   color: var(--text-1);
   text-align: left;
   cursor: pointer;
-  transition: border-color 150ms ease-out, background 150ms ease-out, transform 100ms ease-out,
+  transition:
+    border-color 150ms ease-out,
+    background 150ms ease-out,
+    transform 100ms ease-out,
     opacity 150ms ease-out;
 }
 
@@ -297,7 +302,9 @@ body {
   font-size: 14px;
   font-weight: 600;
   cursor: pointer;
-  transition: background 150ms ease-out, transform 100ms ease-out;
+  transition:
+    background 150ms ease-out,
+    transform 100ms ease-out;
 }
 
 .btn-primary:hover {

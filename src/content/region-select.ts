@@ -31,8 +31,7 @@ export function selectRegion(): Promise<PageRect | null> {
 
     // Root container holds the mask, an interaction layer, handles and the readout.
     const root = doc.createElement('div');
-    root.style.cssText =
-      'position:fixed;inset:0;z-index:2147483647;pointer-events:none;';
+    root.style.cssText = 'position:fixed;inset:0;z-index:2147483647;pointer-events:none;';
 
     // The selection itself: transparent interior + giant outward box-shadow that
     // dims everything outside the rectangle (the "cutout" effect).
@@ -44,8 +43,7 @@ export function selectRegion(): Promise<PageRect | null> {
 
     // Transparent interaction layer catches all mouse events on the page area.
     const layer = doc.createElement('div');
-    layer.style.cssText =
-      'position:absolute;inset:0;cursor:crosshair;pointer-events:auto;';
+    layer.style.cssText = 'position:absolute;inset:0;cursor:crosshair;pointer-events:auto;';
     root.appendChild(layer);
 
     const readout = doc.createElement('div');
@@ -59,8 +57,7 @@ export function selectRegion(): Promise<PageRect | null> {
     const handles: HandleEl[] = [];
     for (const corner of ['nw', 'ne', 'sw', 'se'] as const) {
       const el = doc.createElement('div');
-      const cursor =
-        corner === 'nw' || corner === 'se' ? 'nwse-resize' : 'nesw-resize';
+      const cursor = corner === 'nw' || corner === 'se' ? 'nwse-resize' : 'nesw-resize';
       el.style.cssText =
         `position:absolute;width:13px;height:13px;background:#fff;border:2px solid #2f80ed;` +
         `border-radius:50%;pointer-events:auto;cursor:${cursor};box-sizing:border-box;`;
@@ -118,8 +115,10 @@ export function selectRegion(): Promise<PageRect | null> {
 
     const inRect = (p: Pt) =>
       rect !== null &&
-        p.x >= rect.x && p.x <= rect.x + rect.w &&
-        p.y >= rect.y && p.y <= rect.y + rect.h;
+      p.x >= rect.x &&
+      p.x <= rect.x + rect.w &&
+      p.y >= rect.y &&
+      p.y <= rect.y + rect.h;
 
     const onDown = (e: MouseEvent) => {
       const p = { x: e.clientX, y: e.clientY };

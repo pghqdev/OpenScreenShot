@@ -1,4 +1,13 @@
-import { type Annotation, type BlurCache, createBlurCache, drawAnnotation, drawCropPreview, drawSelection, pruneBlurCache, type Rect } from './annotations';
+import {
+  type Annotation,
+  type BlurCache,
+  createBlurCache,
+  drawAnnotation,
+  drawCropPreview,
+  drawSelection,
+  pruneBlurCache,
+  type Rect,
+} from './annotations';
 
 /**
  * CanvasController — imperative owner of the editor's <canvas>.

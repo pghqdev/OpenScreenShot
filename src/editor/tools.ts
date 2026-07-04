@@ -65,7 +65,13 @@ export function createShapeDraft(tool: ShapeTool, p: Point): Annotation {
         strokeWidth: DEFAULT_STROKE_WIDTH,
       };
     case 'pen':
-      return { id, type: 'pen', points: [p], stroke: DEFAULT_STROKE, strokeWidth: DEFAULT_STROKE_WIDTH };
+      return {
+        id,
+        type: 'pen',
+        points: [p],
+        stroke: DEFAULT_STROKE,
+        strokeWidth: DEFAULT_STROKE_WIDTH,
+      };
     case 'blur':
       return { id, type: 'blur', x: p.x, y: p.y, w: 0, h: 0, strength: DEFAULT_BLUR_STRENGTH };
   }

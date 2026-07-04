@@ -275,74 +275,79 @@ export function useEditor() {
   }, [undo, redo, deleteSelection]);
 
   // --- Drag handlers (attached to window during a drag) ---
-  const onDragMove = useCallback((e: MouseEvent) => {
-    const c = controllerRef.current;
-    const it = interactionRef.current;
-    if (!c || !it) return;
-    const rect = c.canvas.getBoundingClientRect();
-    const sx = e.clientX - rect.left;
-    const sy = e.clientY - rect.top;
-    if (it.kind === 'pan') {
-      c.panBy(e.clientX - it.lastX, e.clientY - it.lastY);
-      it.lastX = e.clientX;
-      it.lastY = e.clientY;
-      return;
-    }
-    const p = c.toImage(sx, sy);
-    if (it.kind === 'crop') {
-      const r: Rect = { x: it.start.x, y: it.start.y, w: p.x - it.start.x, h: p.y - it.start.y };
-      cropDraftRef.current = r;
-      c.setCropRect(r);
-      return;
-    }
-    if (it.kind === 'move') {
-      if (!dragSnapshottedRef.current) {
-        snapshot();
-        dragSnapshottedRef.current = true;
+  const onDragMove = useCallback(
+    (e: MouseEvent) => {
+      const c = controllerRef.current;
+      const it = interactionRef.current;
+      if (!c || !it) return;
+      const rect = c.canvas.getBoundingClientRect();
+      const sx = e.clientX - rect.left;
+      const sy = e.clientY - rect.top;
+      if (it.kind === 'pan') {
+        c.panBy(e.clientX - it.lastX, e.clientY - it.lastY);
+        it.lastX = e.clientX;
+        it.lastY = e.clientY;
+        return;
       }
-      const dx = p.x - it.lastX;
-      const dy = p.y - it.lastY;
-      it.lastX = p.x;
-      it.lastY = p.y;
-      const id = it.id;
-      setAnnotations((prev) => prev.map((a) => (a.id === id ? translateAnnotation(a, dx, dy) : a)));
-      return;
-    }
-    if (it.kind === 'resize') {
-      if (!dragSnapshottedRef.current) {
-        snapshot();
-        dragSnapshottedRef.current = true;
+      const p = c.toImage(sx, sy);
+      if (it.kind === 'crop') {
+        const r: Rect = { x: it.start.x, y: it.start.y, w: p.x - it.start.x, h: p.y - it.start.y };
+        cropDraftRef.current = r;
+        c.setCropRect(r);
+        return;
       }
-      const dx = p.x - it.startPt.x;
-      const dy = p.y - it.startPt.y;
-      const id = it.id;
-      const handle = it.handle;
-      const startBBox = it.startBBox;
-      setAnnotations((prev) =>
-        prev.map((a) => {
-          if (a.id !== id) return a;
-          if (a.type === 'rect' || a.type === 'blur') {
-            const r = resizeRect(startBBox, handle, dx, dy);
-            return { ...a, x: r.x, y: r.y, w: r.w, h: r.h };
-          }
-          if (a.type === 'arrow') {
-            if (handle === 'start') return { ...a, x1: p.x, y1: p.y };
-            return { ...a, x2: p.x, y2: p.y };
-          }
-          return a;
-        }),
-      );
-      return;
-    }
-    const draft = draftRef.current;
-    if (!draft) return;
-    if (it.kind === 'pen' && draft.type === 'pen') {
-      const last = draft.points[draft.points.length - 1];
-      if (last && dist(last, p) < 1.5) return; // throttle pen samples
-    }
-    extendDraft(draft, p);
-    c.setDraft(draft);
-  }, [snapshot]);
+      if (it.kind === 'move') {
+        if (!dragSnapshottedRef.current) {
+          snapshot();
+          dragSnapshottedRef.current = true;
+        }
+        const dx = p.x - it.lastX;
+        const dy = p.y - it.lastY;
+        it.lastX = p.x;
+        it.lastY = p.y;
+        const id = it.id;
+        setAnnotations((prev) =>
+          prev.map((a) => (a.id === id ? translateAnnotation(a, dx, dy) : a)),
+        );
+        return;
+      }
+      if (it.kind === 'resize') {
+        if (!dragSnapshottedRef.current) {
+          snapshot();
+          dragSnapshottedRef.current = true;
+        }
+        const dx = p.x - it.startPt.x;
+        const dy = p.y - it.startPt.y;
+        const id = it.id;
+        const handle = it.handle;
+        const startBBox = it.startBBox;
+        setAnnotations((prev) =>
+          prev.map((a) => {
+            if (a.id !== id) return a;
+            if (a.type === 'rect' || a.type === 'blur') {
+              const r = resizeRect(startBBox, handle, dx, dy);
+              return { ...a, x: r.x, y: r.y, w: r.w, h: r.h };
+            }
+            if (a.type === 'arrow') {
+              if (handle === 'start') return { ...a, x1: p.x, y1: p.y };
+              return { ...a, x2: p.x, y2: p.y };
+            }
+            return a;
+          }),
+        );
+        return;
+      }
+      const draft = draftRef.current;
+      if (!draft) return;
+      if (it.kind === 'pen' && draft.type === 'pen') {
+        const last = draft.points[draft.points.length - 1];
+        if (last && dist(last, p) < 1.5) return; // throttle pen samples
+      }
+      extendDraft(draft, p);
+      c.setDraft(draft);
+    },
+    [snapshot],
+  );
 
   const onDragUp = useCallback(() => {
     const c = controllerRef.current;
@@ -573,20 +578,17 @@ export function useEditor() {
     [],
   );
 
-  const exportPdf = useCallback(
-    async (opts: PdfOptions, filenameBase: string) => {
-      const c = controllerRef.current;
-      if (!c || !c.image) return;
-      setExporting(true);
-      try {
-        const canvas = c.composeFinal();
-        await exportPdfFile(canvas, opts, `${filenameBase}.pdf`);
-      } finally {
-        setExporting(false);
-      }
-    },
-    [],
-  );
+  const exportPdf = useCallback(async (opts: PdfOptions, filenameBase: string) => {
+    const c = controllerRef.current;
+    if (!c || !c.image) return;
+    setExporting(true);
+    try {
+      const canvas = c.composeFinal();
+      await exportPdfFile(canvas, opts, `${filenameBase}.pdf`);
+    } finally {
+      setExporting(false);
+    }
+  }, []);
 
   // Screen position (relative to canvas) + display size for the text overlay.
   const textOverlayPos = useCallback(

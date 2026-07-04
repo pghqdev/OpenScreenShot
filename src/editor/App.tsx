@@ -22,7 +22,16 @@ export function App() {
       <header class="topbar">
         <div class="topbar-brand">
           <span class="brand-mark" aria-hidden="true">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <svg
+              width="18"
+              height="18"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            >
               <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z" />
               <circle cx="12" cy="13" r="4" />
             </svg>
@@ -35,7 +44,9 @@ export function App() {
             <button class="icon-btn" title="Zoom out" onClick={ed.zoomOut} aria-label="Zoom out">
               −
             </button>
-            <span class="zoom-readout" aria-live="polite">{ed.zoomPct}%</span>
+            <span class="zoom-readout" aria-live="polite">
+              {ed.zoomPct}%
+            </span>
             <button class="icon-btn" title="Zoom in" onClick={ed.zoomIn} aria-label="Zoom in">
               +
             </button>
@@ -46,7 +57,12 @@ export function App() {
               100%
             </button>
           </div>
-          <button class="btn-primary" title="Export" disabled={!ed.capture} onClick={() => setExportOpen(true)}>
+          <button
+            class="btn-primary"
+            title="Export"
+            disabled={!ed.capture}
+            onClick={() => setExportOpen(true)}
+          >
             Export
           </button>
         </div>
@@ -96,7 +112,9 @@ export function App() {
             <IconTrash />
           </button>
 
-          <div class="toolbar-count" title="Annotations">{ed.annotations.length}</div>
+          <div class="toolbar-count" title="Annotations">
+            {ed.annotations.length}
+          </div>
         </aside>
 
         <div class="stage">
@@ -130,16 +148,22 @@ export function App() {
           {!ed.loading && !ed.capture && !ed.error ? (
             <div class="overlay-msg">
               <div class="empty">
-                <div class="empty-emoji" aria-hidden="true">🖼️</div>
+                <div class="empty-emoji" aria-hidden="true">
+                  🖼️
+                </div>
                 <h2>Nothing to edit yet</h2>
-                <p>Use the OpenScreenShot popup to capture a page, then it opens here for editing.</p>
+                <p>
+                  Use the OpenScreenShot popup to capture a page, then it opens here for editing.
+                </p>
               </div>
             </div>
           ) : null}
           {ed.error ? (
             <div class="overlay-msg">
               <div class="empty">
-                <div class="empty-emoji" aria-hidden="true">⚠️</div>
+                <div class="empty-emoji" aria-hidden="true">
+                  ⚠️
+                </div>
                 <h2>Something went wrong</h2>
                 <p>{ed.error}</p>
               </div>
@@ -156,19 +180,24 @@ export function App() {
         <span class="status-hint">{hintForTool(ed.tool)}</span>
       </footer>
 
-      {exportOpen && ed.capture ? <ExportDialog ed={ed} onClose={() => setExportOpen(false)} /> : null}
+      {exportOpen && ed.capture ? (
+        <ExportDialog ed={ed} onClose={() => setExportOpen(false)} />
+      ) : null}
     </div>
   );
 }
 
 function ExportDialog({ ed, onClose }: { ed: ReturnType<typeof useEditor>; onClose: () => void }) {
   const df = ed.settings?.defaultFormat ?? 'png';
-  const initialFormat: DialogFormat = df === 'pdf' || df === 'png' || df === 'jpeg' || df === 'webp' ? df : 'png';
+  const initialFormat: DialogFormat =
+    df === 'pdf' || df === 'png' || df === 'jpeg' || df === 'webp' ? df : 'png';
   const [format, setFormat] = useState<DialogFormat>(initialFormat);
   const [quality, setQuality] = useState(ed.settings?.quality ?? 0.92);
   const [filenameBase, setFilenameBase] = useState(ed.defaultFilename());
 
-  const [pdfPageSize, setPdfPageSize] = useState<'a4' | 'letter' | 'full'>(ed.settings?.pdfPageSize ?? 'a4');
+  const [pdfPageSize, setPdfPageSize] = useState<'a4' | 'letter' | 'full'>(
+    ed.settings?.pdfPageSize ?? 'a4',
+  );
   const [pdfOrientation, setPdfOrientation] = useState<'portrait' | 'landscape'>(
     ed.settings?.pdfOrientation ?? 'portrait',
   );
@@ -325,13 +354,18 @@ function ExportDialog({ ed, onClose }: { ed: ReturnType<typeof useEditor>; onClo
               </label>
             </div>
             {isFull ? (
-              <p class="pdf-hint">“Full” makes one page sized to the image, so orientation, multi-page and margin don’t apply.</p>
+              <p class="pdf-hint">
+                “Full” makes one page sized to the image, so orientation, multi-page and margin
+                don’t apply.
+              </p>
             ) : null}
           </>
         ) : null}
 
         <div class="modal-row">
-          <label class="field-label" for="oss-filename">Filename</label>
+          <label class="field-label" for="oss-filename">
+            Filename
+          </label>
           <div class="filename-row">
             <input
               id="oss-filename"
@@ -458,7 +492,16 @@ function ToolIcon({ id }: { id: Tool }) {
 
 function IconUndo() {
   return (
-    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <svg
+      width="20"
+      height="20"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      stroke-width="2"
+      stroke-linecap="round"
+      stroke-linejoin="round"
+    >
       <path d="M9 14L4 9l5-5M4 9h11a5 5 0 0 1 0 10h-3" />
     </svg>
   );
@@ -466,7 +509,16 @@ function IconUndo() {
 
 function IconRedo() {
   return (
-    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <svg
+      width="20"
+      height="20"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      stroke-width="2"
+      stroke-linecap="round"
+      stroke-linejoin="round"
+    >
       <path d="M15 14l5-5-5-5M20 9H9a5 5 0 0 0 0 10h3" />
     </svg>
   );
@@ -474,7 +526,16 @@ function IconRedo() {
 
 function IconTrash() {
   return (
-    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <svg
+      width="20"
+      height="20"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      stroke-width="2"
+      stroke-linecap="round"
+      stroke-linejoin="round"
+    >
       <path d="M4 7h16M9 7V4h6v3M6 7l1 13h10l1-13" />
     </svg>
   );

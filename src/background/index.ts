@@ -11,12 +11,7 @@
  * After a capture completes, the image is stashed in storage and the editor page
  * is opened in a new tab. Export (download) happens from the editor.
  */
-import type {
-  BackgroundMessage,
-  CaptureMode,
-  PopupMessage,
-  TileSpec,
-} from '../shared/types';
+import type { BackgroundMessage, CaptureMode, PopupMessage, TileSpec } from '../shared/types';
 import { setLastCapture } from '../shared/storage';
 import { isProtectedUrl } from '../shared/utils';
 import { computeScrollPositions, MAX_CANVAS_HEIGHT_PX } from '../shared/geometry';
@@ -150,7 +145,7 @@ async function captureFullPage(tab: chrome.tabs.Tab): Promise<void> {
     broadcast({
       type: 'CAPTURE_ERROR',
       code: 'blank-page',
-      message: "This page has no scrollable content.",
+      message: 'This page has no scrollable content.',
     });
     return;
   }
@@ -190,7 +185,12 @@ async function captureFullPage(tab: chrome.tabs.Tab): Promise<void> {
 
   const dataUrl = await execInTab(tabId, stitchTiles, [tiles, canvasWidth, canvasHeight]);
   await handoffToEditor(dataUrl, canvasWidth, canvasHeight, 'full-page', tab.title ?? '');
-  broadcast({ type: 'CAPTURE_COMPLETE', imageUrl: dataUrl, width: canvasWidth, height: canvasHeight });
+  broadcast({
+    type: 'CAPTURE_COMPLETE',
+    imageUrl: dataUrl,
+    width: canvasWidth,
+    height: canvasHeight,
+  });
 }
 
 /**

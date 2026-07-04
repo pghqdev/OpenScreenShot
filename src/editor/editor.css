@@ -109,7 +109,9 @@ body {
   font-size: 16px;
   line-height: 1;
   cursor: pointer;
-  transition: background 120ms ease-out, border-color 120ms ease-out;
+  transition:
+    background 120ms ease-out,
+    border-color 120ms ease-out;
 }
 
 .icon-btn:hover {
@@ -149,7 +151,9 @@ body {
   font-weight: 600;
   font-size: 13px;
   cursor: pointer;
-  transition: background 120ms ease-out, opacity 120ms ease-out;
+  transition:
+    background 120ms ease-out,
+    opacity 120ms ease-out;
 }
 
 .btn-primary:hover:not(:disabled) {
@@ -223,7 +227,10 @@ body {
   background: transparent;
   color: var(--text-2);
   cursor: pointer;
-  transition: background 120ms ease-out, color 120ms ease-out, border-color 120ms ease-out;
+  transition:
+    background 120ms ease-out,
+    color 120ms ease-out,
+    border-color 120ms ease-out;
 }
 
 .tool-btn:hover {
@@ -355,7 +362,9 @@ body {
   color: var(--text-1);
   text-align: left;
   cursor: pointer;
-  transition: border-color 120ms ease-out, background 120ms ease-out;
+  transition:
+    border-color 120ms ease-out,
+    background 120ms ease-out;
 }
 .format-card:hover {
   border-color: var(--accent);
@@ -430,7 +439,9 @@ body {
   color: var(--text-1);
   font-size: 13px;
   cursor: pointer;
-  transition: background 120ms ease-out, color 120ms ease-out;
+  transition:
+    background 120ms ease-out,
+    color 120ms ease-out;
 }
 .segmented-btn:last-child {
   border-right: none;
