@@ -1,3 +1,5 @@
+import { type Annotation, type BlurCache, createBlurCache, drawAnnotation, pruneBlurCache } from './annotations';
+
 /**
  * CanvasController — imperative owner of the editor's <canvas>.
  *
@@ -31,8 +33,16 @@ export class CanvasController {
   private dpr = 1;
   image: HTMLImageElement | null = null;
   view: Viewport = { zoom: 1, panX: 0, panY: 0 };
+  /** Committed annotations, in image pixels. React owns the list; we render it. */
+  annotations: Annotation[] = [];
+  /** An in-progress annotation (drag-to-draw); not yet in `annotations`. */
+  draft: Annotation | null = null;
+  /** Currently selected annotation id (handles drawn in screen space later). */
+  selectedId: string | null = null;
   /** Called whenever the viewport changes (zoom/pan) — not on annotation edits. */
   onViewChange: (() => void) | null = null;
+
+  private readonly blurCache: BlurCache = createBlurCache();
 
   private readonly ro: ResizeObserver;
 
@@ -53,7 +63,24 @@ export class CanvasController {
 
   setImage(img: HTMLImageElement): void {
     this.image = img;
+    this.blurCache.clear();
     this.fit();
+  }
+
+  setAnnotations(a: Annotation[]): void {
+    this.annotations = a;
+    pruneBlurCache(this.blurCache, new Set(a.map((x) => x.id)));
+    this.render();
+  }
+
+  setDraft(d: Annotation | null): void {
+    this.draft = d;
+    this.render();
+  }
+
+  setSelected(id: string | null): void {
+    this.selectedId = id;
+    this.render();
   }
 
   resize(): void {
@@ -129,18 +156,29 @@ export class CanvasController {
   render(): void {
     const { ctx, dpr } = this;
     const rect = this.canvas.getBoundingClientRect();
+    const img = this.image;
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
     ctx.clearRect(0, 0, rect.width, rect.height);
-    if (!this.image) return;
+    if (!img) return;
     // Checkerboard over the image's screen rect so transparency reads as such.
-    const sw = this.image.naturalWidth * this.view.zoom;
-    const sh = this.image.naturalHeight * this.view.zoom;
+    const sw = img.naturalWidth * this.view.zoom;
+    const sh = img.naturalHeight * this.view.zoom;
     drawCheckerboard(ctx, this.view.panX, this.view.panY, sw, sh);
     ctx.save();
     ctx.translate(this.view.panX, this.view.panY);
     ctx.scale(this.view.zoom, this.view.zoom);
     ctx.imageSmoothingEnabled = this.view.zoom <= 1;
-    ctx.drawImage(this.image, 0, 0);
+    ctx.drawImage(img, 0, 0);
+    for (const a of this.annotations) {
+      ctx.save();
+      drawAnnotation(ctx, a, img, this.blurCache);
+      ctx.restore();
+    }
+    if (this.draft) {
+      ctx.save();
+      drawAnnotation(ctx, this.draft, img, this.blurCache);
+      ctx.restore();
+    }
     ctx.restore();
   }
 }
