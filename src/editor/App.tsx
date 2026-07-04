@@ -1,123 +1,16 @@
-import { useEffect, useRef, useState } from 'preact/hooks';
-import { CanvasController } from './canvas';
-import type { LastCapture, Settings } from '../shared/types';
-import { getLastCapture, getSettings } from '../shared/storage';
+import { useEffect, useRef } from 'preact/hooks';
+import { useEditor } from './useEditor';
+import { TOOL_LIST, type Tool } from './tools';
 
 export function App() {
-  const canvasRef = useRef<HTMLCanvasElement>(null);
-  const controllerRef = useRef<CanvasController | null>(null);
-  const [, setViewTick] = useState(0);
-  const [capture, setCapture] = useState<LastCapture | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  const [spaceHeld, setSpaceHeld] = useState(false);
-
-  // Create the controller + load the stashed capture on mount.
-  useEffect(() => {
-    const canvas = canvasRef.current!;
-    const c = new CanvasController(canvas);
-    c.onViewChange = () => setViewTick((t) => t + 1);
-    controllerRef.current = c;
-
-    void (async () => {
-      const s = await getSettings();
-      applyTheme(s.theme);
-      const cap = await getLastCapture();
-      if (!cap) {
-        setLoading(false);
-        return;
-      }
-      setCapture(cap);
-      const img = new Image();
-      img.onload = () => {
-        c.setImage(img);
-        setLoading(false);
-      };
-      img.onerror = () => {
-        setError('Could not load the screenshot.');
-        setLoading(false);
-      };
-      img.src = cap.dataUrl;
-    })();
-
-    return () => {
-      c.destroy();
-      controllerRef.current = null;
-    };
-  }, []);
-
-  // Spacebar = temporary pan (hand) modifier.
-  useEffect(() => {
-    const down = (e: KeyboardEvent) => {
-      if (e.code === 'Space' && !isTypingTarget(e.target)) {
-        e.preventDefault();
-        setSpaceHeld(true);
-      }
-    };
-    const up = (e: KeyboardEvent) => {
-      if (e.code === 'Space') setSpaceHeld(false);
-    };
-    window.addEventListener('keydown', down);
-    window.addEventListener('keyup', up);
-    return () => {
-      window.removeEventListener('keydown', down);
-      window.removeEventListener('keyup', up);
-    };
-  }, []);
-
-  // Pan via middle-mouse or space+drag. (Left-button interactions arrive with tools.)
-  const dragRef = useRef<{ lastX: number; lastY: number } | null>(null);
-
-  function onMouseDown(e: MouseEvent) {
-    const isPan = e.button === 1 || (e.button === 0 && spaceHeld);
-    if (!isPan) return;
-    e.preventDefault();
-    dragRef.current = { lastX: e.clientX, lastY: e.clientY };
-    window.addEventListener('mousemove', onPanMove);
-    window.addEventListener('mouseup', onPanUp);
-  }
-  function onPanMove(e: MouseEvent) {
-    const d = dragRef.current;
-    if (!d) return;
-    const c = controllerRef.current;
-    if (!c) return;
-    c.panBy(e.clientX - d.lastX, e.clientY - d.lastY);
-    d.lastX = e.clientX;
-    d.lastY = e.clientY;
-  }
-  function onPanUp() {
-    dragRef.current = null;
-    window.removeEventListener('mousemove', onPanMove);
-    window.removeEventListener('mouseup', onPanUp);
-  }
-
-  function onWheel(e: WheelEvent) {
-    e.preventDefault();
-    const c = controllerRef.current;
-    if (!c) return;
-    const factor = e.deltaY < 0 ? 1.1 : 1 / 1.1;
-    c.zoomAt(factor, e.offsetX, e.offsetY);
-  }
-
-  // Attach a non-passive wheel listener so we can preventDefault (trackpad
-  // pinch/scroll would otherwise fight the editor).
-  useEffect(() => {
-    const canvas = canvasRef.current;
-    if (!canvas) return;
-    canvas.addEventListener('wheel', onWheel, { passive: false });
-    return () => canvas.removeEventListener('wheel', onWheel);
-  }, []);
-
-  function zoomButton(factor: number) {
-    const c = controllerRef.current;
-    const canvas = canvasRef.current;
-    if (!c || !canvas) return;
-    const rect = canvas.getBoundingClientRect();
-    c.zoomAt(factor, rect.width / 2, rect.height / 2);
-  }
-
-  const c = controllerRef.current;
-  const zoomPct = c ? Math.round(c.view.zoom * 100) : 100;
+  const ed = useEditor();
+  const cursor = ed.spaceHeld
+    ? 'grab'
+    : ed.tool === 'text'
+      ? 'text'
+      : ed.tool === 'select'
+        ? 'default'
+        : 'crosshair';
 
   return (
     <div class="editor">
@@ -130,75 +23,206 @@ export function App() {
             </svg>
           </span>
           <span class="brand-name">OpenScreenShot</span>
-          {capture ? <span class="brand-mode">{labelForMode(capture.mode)}</span> : null}
+          {ed.capture ? <span class="brand-mode">{labelForMode(ed.capture.mode)}</span> : null}
         </div>
         <div class="topbar-controls">
           <div class="zoom-group" role="group" aria-label="Zoom">
-            <button class="icon-btn" title="Zoom out" onClick={() => zoomButton(1 / 1.25)}>
+            <button class="icon-btn" title="Zoom out" onClick={ed.zoomOut} aria-label="Zoom out">
               −
             </button>
-            <span class="zoom-readout" aria-live="polite">{zoomPct}%</span>
-            <button class="icon-btn" title="Zoom in" onClick={() => zoomButton(1.25)}>
+            <span class="zoom-readout" aria-live="polite">{ed.zoomPct}%</span>
+            <button class="icon-btn" title="Zoom in" onClick={ed.zoomIn} aria-label="Zoom in">
               +
             </button>
-            <button class="text-btn" title="Fit to screen" onClick={() => c?.fit()}>
+            <button class="text-btn" title="Fit to screen" onClick={ed.fit}>
               Fit
             </button>
-            <button class="text-btn" title="Actual size (100%)" onClick={() => c?.resetZoom()}>
+            <button class="text-btn" title="Actual size (100%)" onClick={ed.resetZoom}>
               100%
             </button>
           </div>
-          <button class="btn-primary" disabled>
+          <button class="btn-primary" disabled title="Export arrives next">
             Export
           </button>
         </div>
       </header>
 
-      <div class="stage">
-        <canvas
-          ref={canvasRef}
-          class="stage-canvas"
-          data-cursor={spaceHeld ? 'grab' : undefined}
-          onMouseDown={onMouseDown}
-        />
-        {loading ? (
-          <div class="overlay-msg">
-            <span class="spinner" aria-label="Loading" />
-            <span>Loading screenshot…</span>
-          </div>
-        ) : null}
-        {!loading && !capture && !error ? (
-          <div class="overlay-msg">
-            <div class="empty">
-              <div class="empty-emoji" aria-hidden="true">🖼️</div>
-              <h2>Nothing to edit yet</h2>
-              <p>Use the OpenScreenShot popup to capture a page, then it opens here for editing.</p>
+      <div class="workspace">
+        <aside class="toolbar" aria-label="Annotation tools">
+          {TOOL_LIST.map((t) => (
+            <button
+              key={t.id}
+              class={`tool-btn${ed.tool === t.id ? ' is-active' : ''}`}
+              title={`${t.label} (${t.shortcut})`}
+              aria-pressed={ed.tool === t.id}
+              onClick={() => ed.setTool(t.id)}
+            >
+              <ToolIcon id={t.id} />
+            </button>
+          ))}
+          <div class="toolbar-count" title="Annotations">{ed.annotations.length}</div>
+        </aside>
+
+        <div class="stage">
+          <canvas
+            ref={ed.canvasRef}
+            class="stage-canvas"
+            data-cursor={cursor}
+            onMouseDown={ed.onCanvasMouseDown}
+          />
+
+          {ed.cropActive ? (
+            <div class="crop-confirm">
+              <span>Crop to selection</span>
+              <button class="btn-primary btn-sm" onClick={ed.applyCrop}>
+                Apply
+              </button>
+              <button class="text-btn" onClick={ed.cancelCrop}>
+                Cancel
+              </button>
             </div>
-          </div>
-        ) : null}
-        {error ? (
-          <div class="overlay-msg">
-            <div class="empty">
-              <div class="empty-emoji" aria-hidden="true">⚠️</div>
-              <h2>Something went wrong</h2>
-              <p>{error}</p>
+          ) : null}
+
+          {ed.textEdit ? <TextOverlay ed={ed} /> : null}
+
+          {ed.loading ? (
+            <div class="overlay-msg">
+              <span class="spinner" aria-label="Loading" />
+              <span>Loading screenshot…</span>
             </div>
-          </div>
-        ) : null}
+          ) : null}
+          {!ed.loading && !ed.capture && !ed.error ? (
+            <div class="overlay-msg">
+              <div class="empty">
+                <div class="empty-emoji" aria-hidden="true">🖼️</div>
+                <h2>Nothing to edit yet</h2>
+                <p>Use the OpenScreenShot popup to capture a page, then it opens here for editing.</p>
+              </div>
+            </div>
+          ) : null}
+          {ed.error ? (
+            <div class="overlay-msg">
+              <div class="empty">
+                <div class="empty-emoji" aria-hidden="true">⚠️</div>
+                <h2>Something went wrong</h2>
+                <p>{ed.error}</p>
+              </div>
+            </div>
+          ) : null}
+        </div>
       </div>
 
       <footer class="statusbar">
-        <span>{capture ? `${capture.width} × ${capture.height}px` : '—'}</span>
+        <span>{ed.imageSize ? `${ed.imageSize.w} × ${ed.imageSize.h}px` : '—'}</span>
         <span class="status-sep">·</span>
-        <span>{zoomPct}%</span>
+        <span>{ed.zoomPct}%</span>
         <span class="status-spacer" />
-        <span class="status-hint">Scroll to zoom · drag with middle button or Space to pan</span>
+        <span class="status-hint">{hintForTool(ed.tool)}</span>
       </footer>
     </div>
   );
 }
 
-function labelForMode(mode: LastCapture['mode']): string {
+function TextOverlay({ ed }: { ed: ReturnType<typeof useEditor> }) {
+  const id = ed.textEdit!.id;
+  const pos = ed.textOverlayPos(id);
+  const ann = ed.annotations.find((a) => a.id === id && a.type === 'text');
+  const ref = useRef<HTMLTextAreaElement>(null);
+
+  useEffect(() => {
+    ref.current?.focus();
+    ref.current?.select();
+  }, []);
+
+  if (!pos || !ann || ann.type !== 'text') return null;
+
+  return (
+    <textarea
+      ref={ref}
+      class="text-overlay"
+      style={{
+        left: `${pos.x}px`,
+        top: `${pos.y}px`,
+        fontSize: `${pos.fontSize}px`,
+        lineHeight: 1.25,
+        width: `${Math.max(60, pos.width + 12)}px`,
+        height: `${Math.max(pos.fontSize * 1.4, pos.height + 4)}px`,
+      }}
+      value={ann.text}
+      placeholder="Type…"
+      onInput={(e) => ed.updateText(id, (e.target as HTMLTextAreaElement).value)}
+      onBlur={() => ed.finishText(id)}
+      onKeyDown={(e) => {
+        if (e.key === 'Escape') {
+          e.preventDefault();
+          (e.target as HTMLTextAreaElement).blur();
+        } else if (e.key === 'Enter' && !e.shiftKey) {
+          e.preventDefault();
+          (e.target as HTMLTextAreaElement).blur();
+        }
+      }}
+    />
+  );
+}
+
+function ToolIcon({ id }: { id: Tool }) {
+  const common = {
+    width: 20,
+    height: 20,
+    viewBox: '0 0 24 24',
+    fill: 'none',
+    stroke: 'currentColor',
+    'stroke-width': 2,
+    'stroke-linecap': 'round' as const,
+    'stroke-linejoin': 'round' as const,
+  };
+  switch (id) {
+    case 'select':
+      return (
+        <svg {...common}>
+          <path d="M4 4l6 16 2-7 7-2z" />
+        </svg>
+      );
+    case 'rect':
+      return (
+        <svg {...common}>
+          <rect x="4" y="6" width="16" height="12" rx="2" />
+        </svg>
+      );
+    case 'arrow':
+      return (
+        <svg {...common}>
+          <path d="M4 20L20 4M20 4h-6M20 4v6" />
+        </svg>
+      );
+    case 'pen':
+      return (
+        <svg {...common}>
+          <path d="M16.5 3.5l4 4L7 21H3v-4z" />
+        </svg>
+      );
+    case 'text':
+      return (
+        <svg {...common}>
+          <path d="M5 5h14M12 5v14M9 19h6" />
+        </svg>
+      );
+    case 'blur':
+      return (
+        <svg {...common}>
+          <circle cx="12" cy="12" r="7" stroke-dasharray="2 3" />
+        </svg>
+      );
+    case 'crop':
+      return (
+        <svg {...common}>
+          <path d="M6 2v14h14M2 6h14v14" />
+        </svg>
+      );
+  }
+}
+
+function labelForMode(mode: 'full-page' | 'visible' | 'region'): string {
   switch (mode) {
     case 'full-page':
       return 'Full Page';
@@ -209,13 +233,21 @@ function labelForMode(mode: LastCapture['mode']): string {
   }
 }
 
-function isTypingTarget(t: EventTarget | null): boolean {
-  const el = t as HTMLElement | null;
-  return !!el && (el.tagName === 'INPUT' || el.tagName === 'TEXTAREA' || el.isContentEditable);
-}
-
-function applyTheme(theme: Settings['theme']): void {
-  const prefersDark = window.matchMedia?.('(prefers-color-scheme: dark)').matches ?? false;
-  const dark = theme === 'dark' || (theme === 'system' && prefersDark);
-  document.documentElement.setAttribute('data-theme', dark ? 'dark' : 'light');
+function hintForTool(tool: Tool): string {
+  switch (tool) {
+    case 'rect':
+      return 'Drag to draw a rectangle';
+    case 'arrow':
+      return 'Drag to draw an arrow';
+    case 'pen':
+      return 'Drag to draw freehand';
+    case 'text':
+      return 'Click to place text, then type';
+    case 'blur':
+      return 'Drag over an area to blur it';
+    case 'crop':
+      return 'Drag to select, then Apply to crop';
+    case 'select':
+      return 'Scroll to zoom · Space or middle-drag to pan';
+  }
 }

@@ -186,6 +186,109 @@ body {
 .stage-canvas[data-cursor='grabbing'] {
   cursor: grabbing;
 }
+.stage-canvas[data-cursor='crosshair'] {
+  cursor: crosshair;
+}
+.stage-canvas[data-cursor='text'] {
+  cursor: text;
+}
+
+/* ---- Workspace (toolbar + stage) ---- */
+.workspace {
+  display: flex;
+  flex: 1 1 auto;
+  overflow: hidden;
+}
+
+.toolbar {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  width: 48px;
+  padding: var(--s-2) 0;
+  border-right: 1px solid var(--border);
+  background: var(--surface-1);
+  flex: 0 0 auto;
+}
+
+.tool-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border: 1px solid transparent;
+  border-radius: var(--r-md);
+  background: transparent;
+  color: var(--text-2);
+  cursor: pointer;
+  transition: background 120ms ease-out, color 120ms ease-out, border-color 120ms ease-out;
+}
+
+.tool-btn:hover {
+  background: var(--surface-2);
+  color: var(--text-1);
+}
+
+.tool-btn.is-active {
+  background: var(--accent-subtle);
+  color: var(--accent);
+  border-color: var(--accent);
+}
+
+.tool-btn:focus-visible {
+  outline: 2px solid var(--border-focus);
+  outline-offset: 1px;
+}
+
+.toolbar-count {
+  margin-top: auto;
+  font-size: 11px;
+  color: var(--text-3);
+  font-variant-numeric: tabular-nums;
+}
+
+.btn-sm {
+  height: 28px;
+  padding: 0 10px;
+  font-size: 12px;
+}
+
+.crop-confirm {
+  position: absolute;
+  top: var(--s-3);
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  align-items: center;
+  gap: var(--s-2);
+  padding: 6px 10px 6px 14px;
+  background: var(--surface-1);
+  border: 1px solid var(--border);
+  border-radius: var(--r-full);
+  box-shadow: var(--sh-md);
+  font-size: 13px;
+  z-index: 5;
+}
+
+.text-overlay {
+  position: absolute;
+  margin: 0;
+  min-width: 60px;
+  padding: 2px 4px;
+  border: 1px dashed var(--accent);
+  border-radius: 3px;
+  background: transparent;
+  color: var(--text-1);
+  font-family: var(--font);
+  font-weight: 600;
+  resize: none;
+  overflow: hidden;
+  white-space: pre;
+  outline: none;
+  z-index: 6;
+}
 
 /* ---- Overlay messages (loading / empty / error) ---- */
 .overlay-msg {

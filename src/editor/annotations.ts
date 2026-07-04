@@ -154,6 +154,17 @@ export function measureText(
   return { width: maxW, height: lines.length * leading };
 }
 
+let _measureCanvas: HTMLCanvasElement | null = null;
+/** Measure text without a live canvas context (uses a throwaway offscreen canvas). */
+export function measureTextSize(text: string, fontSize: number): { width: number; height: number } {
+  if (!_measureCanvas) _measureCanvas = document.createElement('canvas');
+  const ctx = _measureCanvas.getContext('2d');
+  if (!ctx) {
+    return { width: text.length * fontSize * 0.6, height: text.split('\n').length * fontSize * 1.25 };
+  }
+  return measureText(ctx, text, fontSize);
+}
+
 /** A cached pixelated tile for a blur annotation, rebuilt when its region changes. */
 interface BlurCacheEntry {
   tile: HTMLCanvasElement;
@@ -320,6 +331,21 @@ function getBlurTile(
 export function pruneBlurCache(blurCache: BlurCache, ids: Set<string>): void {
   for (const key of blurCache.keys()) {
     if (!ids.has(key)) blurCache.delete(key);
+  }
+}
+
+/** Return a copy of an annotation shifted by (dx, dy) in image pixels (immutable). */
+export function translateAnnotation(a: Annotation, dx: number, dy: number): Annotation {
+  switch (a.type) {
+    case 'rect':
+    case 'blur':
+      return { ...a, x: a.x + dx, y: a.y + dy };
+    case 'arrow':
+      return { ...a, x1: a.x1 + dx, y1: a.y1 + dy, x2: a.x2 + dx, y2: a.y2 + dy };
+    case 'pen':
+      return { ...a, points: a.points.map((p) => ({ x: p.x + dx, y: p.y + dy })) };
+    case 'text':
+      return { ...a, x: a.x + dx, y: a.y + dy };
   }
 }
 

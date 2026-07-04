@@ -1,4 +1,4 @@
-import { type Annotation, type BlurCache, createBlurCache, drawAnnotation, pruneBlurCache } from './annotations';
+import { type Annotation, type BlurCache, createBlurCache, drawAnnotation, drawCropPreview, pruneBlurCache, type Rect } from './annotations';
 
 /**
  * CanvasController — imperative owner of the editor's <canvas>.
@@ -39,6 +39,8 @@ export class CanvasController {
   draft: Annotation | null = null;
   /** Currently selected annotation id (handles drawn in screen space later). */
   selectedId: string | null = null;
+  /** A transient crop rectangle (tool action), rendered as a dim preview. */
+  cropRect: Rect | null = null;
   /** Called whenever the viewport changes (zoom/pan) — not on annotation edits. */
   onViewChange: (() => void) | null = null;
 
@@ -80,6 +82,11 @@ export class CanvasController {
 
   setSelected(id: string | null): void {
     this.selectedId = id;
+    this.render();
+  }
+
+  setCropRect(r: Rect | null): void {
+    this.cropRect = r;
     this.render();
   }
 
@@ -177,6 +184,11 @@ export class CanvasController {
     if (this.draft) {
       ctx.save();
       drawAnnotation(ctx, this.draft, img, this.blurCache);
+      ctx.restore();
+    }
+    if (this.cropRect) {
+      ctx.save();
+      drawCropPreview(ctx, this.cropRect, img.naturalWidth, img.naturalHeight);
       ctx.restore();
     }
     ctx.restore();
