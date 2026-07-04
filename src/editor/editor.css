@@ -1,0 +1,272 @@
+/* OpenScreenShot editor styles. Tokens come from src/shared/tokens.css. */
+
+@import '../shared/tokens.css';
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+  height: 100%;
+}
+
+body {
+  font-family: var(--font);
+  font-size: 14px;
+  color: var(--text-1);
+  background: var(--surface-1);
+  -webkit-font-smoothing: antialiased;
+  overflow: hidden;
+}
+
+#app,
+.editor {
+  height: 100vh;
+}
+
+.editor {
+  display: flex;
+  flex-direction: column;
+}
+
+/* ---- Top bar ---- */
+.topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--s-3);
+  height: 52px;
+  padding: 0 var(--s-4);
+  border-bottom: 1px solid var(--border);
+  background: var(--surface-1);
+  flex: 0 0 auto;
+}
+
+.topbar-brand {
+  display: flex;
+  align-items: center;
+  gap: var(--s-2);
+  font-weight: 600;
+}
+
+.brand-mark {
+  display: inline-flex;
+  color: var(--accent);
+}
+
+.brand-name {
+  font-size: 15px;
+}
+
+.brand-mode {
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--text-2);
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: var(--r-full);
+  padding: 1px 8px;
+}
+
+.topbar-controls {
+  display: flex;
+  align-items: center;
+  gap: var(--s-3);
+}
+
+.zoom-group {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: var(--r-md);
+  padding: 2px;
+}
+
+.zoom-readout {
+  min-width: 48px;
+  text-align: center;
+  font-variant-numeric: tabular-nums;
+  font-size: 12px;
+  color: var(--text-2);
+  user-select: none;
+}
+
+.icon-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border: 1px solid transparent;
+  border-radius: var(--r-sm);
+  background: transparent;
+  color: var(--text-1);
+  font-size: 16px;
+  line-height: 1;
+  cursor: pointer;
+  transition: background 120ms ease-out, border-color 120ms ease-out;
+}
+
+.icon-btn:hover {
+  background: var(--surface-3);
+}
+
+.text-btn {
+  height: 28px;
+  padding: 0 8px;
+  border: 1px solid transparent;
+  border-radius: var(--r-sm);
+  background: transparent;
+  color: var(--text-1);
+  font-size: 12px;
+  cursor: pointer;
+  transition: background 120ms ease-out;
+}
+
+.text-btn:hover {
+  background: var(--surface-3);
+}
+
+.icon-btn:focus-visible,
+.text-btn:focus-visible,
+.btn-primary:focus-visible {
+  outline: 2px solid var(--border-focus);
+  outline-offset: 1px;
+}
+
+.btn-primary {
+  height: 32px;
+  padding: 0 14px;
+  border: none;
+  border-radius: var(--r-md);
+  background: var(--accent);
+  color: #fff;
+  font-weight: 600;
+  font-size: 13px;
+  cursor: pointer;
+  transition: background 120ms ease-out, opacity 120ms ease-out;
+}
+
+.btn-primary:hover:not(:disabled) {
+  background: var(--accent-hover);
+}
+
+.btn-primary:active:not(:disabled) {
+  background: var(--accent-pressed);
+}
+
+.btn-primary:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+
+/* ---- Stage (canvas area) ---- */
+.stage {
+  position: relative;
+  flex: 1 1 auto;
+  overflow: hidden;
+  background: var(--surface-2);
+}
+
+.stage-canvas {
+  display: block;
+  width: 100%;
+  height: 100%;
+  cursor: default;
+}
+
+.stage-canvas[data-cursor='grab'] {
+  cursor: grab;
+}
+.stage-canvas[data-cursor='grabbing'] {
+  cursor: grabbing;
+}
+
+/* ---- Overlay messages (loading / empty / error) ---- */
+.overlay-msg {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--s-2);
+  pointer-events: none;
+  color: var(--text-2);
+  background: var(--surface-2);
+}
+
+.empty {
+  text-align: center;
+  max-width: 320px;
+}
+
+.empty-emoji {
+  font-size: 40px;
+  margin-bottom: var(--s-2);
+}
+
+.empty h2 {
+  margin: 0 0 var(--s-2);
+  font-size: 17px;
+  color: var(--text-1);
+}
+
+.empty p {
+  margin: 0;
+  color: var(--text-2);
+  line-height: 1.5;
+}
+
+/* ---- Status bar ---- */
+.statusbar {
+  display: flex;
+  align-items: center;
+  gap: var(--s-2);
+  height: 28px;
+  padding: 0 var(--s-4);
+  border-top: 1px solid var(--border);
+  background: var(--surface-1);
+  font-size: 12px;
+  font-variant-numeric: tabular-nums;
+  color: var(--text-2);
+  flex: 0 0 auto;
+}
+
+.status-sep {
+  color: var(--text-3);
+}
+
+.status-spacer {
+  flex: 1 1 auto;
+}
+
+.status-hint {
+  color: var(--text-3);
+}
+
+/* ---- Spinner (shared shape with popup) ---- */
+.spinner {
+  width: 16px;
+  height: 16px;
+  border: 2px solid var(--accent);
+  border-top-color: transparent;
+  border-radius: var(--r-full);
+  animation: oss-spin 0.7s linear infinite;
+}
+
+@keyframes oss-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .spinner {
+    animation-duration: 1.4s;
+  }
+}
