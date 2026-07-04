@@ -63,6 +63,15 @@ export interface TileSpec {
   y: number;
 }
 
+/** The most recent capture, stashed in storage so the editor page can load it. */
+export interface LastCapture {
+  dataUrl: string;
+  width: number;
+  height: number;
+  mode: CaptureMode;
+  capturedAt: number;
+}
+
 // --- Settings --------------------------------------------------------------
 
 export type ExportFormat = 'png' | 'jpeg' | 'webp' | 'pdf';

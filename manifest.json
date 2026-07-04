@@ -22,8 +22,12 @@
     "service_worker": "src/background/index.ts",
     "type": "module"
   },
-  "permissions": ["activeTab", "scripting", "storage", "downloads"],
+  "permissions": ["activeTab", "scripting", "storage", "unlimitedStorage", "downloads"],
   "host_permissions": [],
+  "options_ui": {
+    "page": "src/editor/index.html",
+    "open_in_tab": true
+  },
   "commands": {
     "capture-full-page": {
       "suggested_key": { "default": "Ctrl+Shift+S", "mac": "Command+Shift+S" },
