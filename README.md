@@ -2,7 +2,7 @@
 
 > Open-source screenshot tool for Chrome — full-page, region, and visible-area capture with an annotation editor and PDF export. Built as a Manifest V3 extension.
 
-![status](https://img.shields.io/badge/status-WIP%20(M1%20foundation)-0A84FF) ![license](https://img.shields.io/badge/license-MIT-34C759) ![manifest](https://img.shields.io/badge/manifest-v3-0A84FF)
+![status](https://img.shields.io/badge/status-WIP%20(M3%20editor)-0A84FF) ![license](https://img.shields.io/badge/license-MIT-34C759) ![manifest](https://img.shields.io/badge/manifest-v3-0A84FF)
 
 OpenScreenShot captures the **entire scrolling page** (scroll-and-stitch), the **visible viewport**, or a **selected region**, lets you annotate the result, and export as PNG, JPEG, WebP, or PDF. Everything runs locally in your browser — your data never leaves your device.
 
@@ -10,26 +10,26 @@ OpenScreenShot captures the **entire scrolling page** (scroll-and-stitch), the *
 
 | Milestone | Focus | State |
 | --- | --- | --- |
-| M1 | Foundation — scaffold, design system, popup, onboarding, visible-area capture | 🚧 In progress |
-| M2 | Capture engine — full-page scroll-and-stitch + region selection | Planned |
-| M3 | Annotation editor + export (PNG/JPEG/WebP/PDF) | Planned |
+| M1 | Foundation — scaffold, design system, popup, onboarding, visible-area capture | ✅ Done |
+| M2 | Capture engine — full-page scroll-and-stitch + region selection | ✅ Done |
+| M3 | Annotation editor + export (PNG/JPEG/WebP/PDF) | 🚧 Next |
 | M4 | Polish — settings, shortcuts, i18n, accessibility | Planned |
 | M5 | Launch — tests, store listing | Planned |
 
 ## Features
 
-- 📄 **Full Page** — scroll-and-stitch the entire page, top to bottom (M2)
+- 📄 **Full Page** — scroll-and-stitch the entire page, top to bottom, with live progress (fixed headers/footers are hidden during capture; proper compositing arrives in M4)
 - 👁 **Visible Area** — capture what's on screen now
-- ✂️ **Selected Region** — click & drag to capture an area (M2)
+- ✂️ **Selected Region** — click & drag to capture an area (viewport-only for now; scroll-during-select arrives in M3/M4)
 - ✏️ **Annotation editor** — rectangle, arrow, pen, text, blur, crop (M3)
 - 💾 **Export** — PNG, JPEG, WebP, and PDF with multi-page support (M3)
-- 🎨 Polished, accessible, dark/light UI (M1 foundation)
+- 🎨 Polished, accessible, dark/light UI
 
 ## Tech stack
 
 - **TypeScript** (strict) + **Preact** for the popup/editor UI
 - **Vite** + **[@crxjs/vite-plugin](https://github.com/crxjs/crxjs)** for Manifest V3 bundling & HMR
-- **OffscreenCanvas** for stitching (M2)
+- **Canvas compositing in-page** via on-demand `chrome.scripting` injection (no offscreen document needed)
 - **Vitest** for unit tests, **Playwright** for e2e (planned)
 
 ## Getting started
@@ -96,11 +96,12 @@ openscreenshot/
 
 OpenScreenShot requests the minimum permissions needed:
 
-- `activeTab` — access the current tab when you click the extension
+- `activeTab` — access the current tab when you click the extension or use a shortcut
+- `scripting` — inject on-demand page functions for scroll-and-stitch & region selection
 - `storage` — remember your settings & onboarding state
 - `downloads` — save screenshots to your downloads folder
 
-Later milestones add `scripting` and `offscreen` for full-page capture. We never request broad host permissions (`<all_urls>`).
+We never request broad host permissions (`<all_urls>`) — `activeTab` grants access on your click/shortcut, and `scripting` runs within that grant.
 
 ## Privacy
 
