@@ -25,12 +25,21 @@ export function getMetrics(): Metrics {
 }
 
 /**
- * Prepare the page for capture: force instant scrolling and hide fixed/sticky
- * elements so they don't duplicate across tiles. Hidden elements are tagged with
- * a `data-oss-hidden` attribute so {@link restoreCapture} can find them again.
+ * Disable smooth scrolling so capture scrolls are instant. Fixed/sticky
+ * elements are NOT hidden here — the first tile is captured with them visible
+ * (so a fixed header appears once at the top) and {@link hideFixedElements}
+ * hides them for the remaining tiles.
  */
 export function prepareCapture(): void {
   document.documentElement.style.setProperty('scroll-behavior', 'auto', 'important');
+}
+
+/**
+ * Hide fixed/sticky elements so they don't duplicate across tiles. Hidden
+ * elements are tagged with a `data-oss-hidden` attribute so
+ * {@link restoreCapture} can find them again.
+ */
+export function hideFixedElements(): void {
   const els = document.querySelectorAll('*');
   for (const el of els) {
     const cs = getComputedStyle(el);

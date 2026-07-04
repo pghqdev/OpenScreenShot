@@ -18,6 +18,7 @@ import { computeScrollPositions, MAX_CANVAS_HEIGHT_PX } from '../shared/geometry
 import {
   cropTile,
   getMetrics,
+  hideFixedElements,
   prepareCapture,
   restoreCapture,
   scrollToPosition,
@@ -164,20 +165,33 @@ async function captureFullPage(tab: chrome.tabs.Tab): Promise<void> {
   const windowId = tab.windowId ?? chrome.windows.WINDOW_ID_CURRENT;
   const canvasWidth = Math.round(metrics.viewportWidth * dpr);
 
+  // Disable smooth scrolling (but keep fixed elements visible) for the first tile.
   await runInTab(tabId, prepareCapture, []);
   const tiles: TileSpec[] = [];
   try {
-    for (let i = 0; i < positions.length; i++) {
-      const pos = positions[i];
-      const { scrollY } = await execInTab(tabId, scrollToPosition, [pos]);
+    // Tile 0: capture at the top with fixed elements visible so a fixed header
+    // appears once at the top of the final image (instead of being omitted).
+    {
+      await execInTab(tabId, scrollToPosition, [positions[0]]);
       await delay(PAINT_SETTLE_MS);
-      const dataUrl = await captureVisibleTabPng(windowId);
-      tiles.push({ dataUrl, y: Math.round(scrollY * dpr) });
-      broadcast({
-        type: 'CAPTURE_PROGRESS',
-        percent: Math.round(((i + 1) / positions.length) * 100),
-      });
-      if (i < positions.length - 1) await delay(CAPTURE_THROTTLE_MS);
+      const first = await captureVisibleTabPng(windowId);
+      tiles.push({ dataUrl: first, y: 0 });
+      broadcast({ type: 'CAPTURE_PROGRESS', percent: Math.round((1 / positions.length) * 100) });
+    }
+    // Remaining tiles: hide fixed elements so they don't duplicate.
+    if (positions.length > 1) {
+      await runInTab(tabId, hideFixedElements, []);
+      for (let i = 1; i < positions.length; i++) {
+        await delay(CAPTURE_THROTTLE_MS);
+        const { scrollY } = await execInTab(tabId, scrollToPosition, [positions[i]]);
+        await delay(PAINT_SETTLE_MS);
+        const dataUrl = await captureVisibleTabPng(windowId);
+        tiles.push({ dataUrl, y: Math.round(scrollY * dpr) });
+        broadcast({
+          type: 'CAPTURE_PROGRESS',
+          percent: Math.round(((i + 1) / positions.length) * 100),
+        });
+      }
     }
   } finally {
     await runInTab(tabId, restoreCapture, []);
