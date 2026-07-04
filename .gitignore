@@ -6,3 +6,8 @@ dist
 .env
 .vite
 coverage
+
+# generated extension icons (produced by scripts/generate-icons.mjs)
+public/icons/
+# Pi session logs
+pi-session-*.html
