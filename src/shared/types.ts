@@ -90,6 +90,10 @@ export interface Settings {
   quality: number; // 0..1, JPEG/WebP/PDF quality
   filenameTemplate: string;
   showOnboarding: boolean;
+  // Annotation style (remembered across sessions)
+  annotationColor: string;
+  annotationStrokeWidth: number;
+  annotationFontSize: number;
 }
 
 export const DEFAULT_SETTINGS: Settings = {
@@ -102,4 +106,7 @@ export const DEFAULT_SETTINGS: Settings = {
   quality: 0.92,
   filenameTemplate: 'screenshot_{date}_{time}',
   showOnboarding: true,
+  annotationColor: '#ff3b30',
+  annotationStrokeWidth: 6,
+  annotationFontSize: 28,
 };

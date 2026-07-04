@@ -36,7 +36,7 @@ import {
   type Tool,
 } from './tools';
 import type { LastCapture, Settings } from '../shared/types';
-import { getLastCapture, getSettings } from '../shared/storage';
+import { getLastCapture, getSettings, setSettings } from '../shared/storage';
 import { formatFilename } from '../shared/utils';
 import { canvasToDataUrl, downloadDataUrl, withExtension, type ImageFormat } from './export';
 import { exportPdf as exportPdfFile, type PdfOptions } from './pdf';
@@ -117,6 +117,21 @@ export function useEditor() {
 
   useEffect(() => {
     styleRef.current = style;
+  }, [style]);
+
+  // Persist the annotation style so it's remembered across sessions.
+  // Skip the very first run (the initial load from settings) to avoid a write.
+  const styleLoadedRef = useRef(false);
+  useEffect(() => {
+    if (!styleLoadedRef.current) {
+      styleLoadedRef.current = true;
+      return;
+    }
+    void setSettings({
+      annotationColor: style.color,
+      annotationStrokeWidth: style.strokeWidth,
+      annotationFontSize: style.fontSize,
+    });
   }, [style]);
 
   // When a new annotation is selected, adopt its style in the style bar.
@@ -229,6 +244,11 @@ export function useEditor() {
       const s = await getSettings();
       setSettingsState(s);
       applyTheme(s.theme);
+      setStyle({
+        color: s.annotationColor,
+        strokeWidth: s.annotationStrokeWidth,
+        fontSize: s.annotationFontSize,
+      });
       const cap = await getLastCapture();
       if (!cap) {
         setLoading(false);
