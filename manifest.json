@@ -1,0 +1,41 @@
+{
+  "manifest_version": 3,
+  "name": "__MSG_extName__",
+  "version": "0.1.0",
+  "description": "__MSG_extDesc__",
+  "default_locale": "en",
+  "action": {
+    "default_popup": "src/popup/index.html",
+    "default_title": "OpenScreenShot",
+    "default_icon": {
+      "16": "icons/icon16.png",
+      "48": "icons/icon48.png",
+      "128": "icons/icon128.png"
+    }
+  },
+  "icons": {
+    "16": "icons/icon16.png",
+    "48": "icons/icon48.png",
+    "128": "icons/icon128.png"
+  },
+  "background": {
+    "service_worker": "src/background/index.ts",
+    "type": "module"
+  },
+  "permissions": ["activeTab", "storage", "downloads"],
+  "host_permissions": [],
+  "commands": {
+    "capture-full-page": {
+      "suggested_key": { "default": "Ctrl+Shift+S", "mac": "Command+Shift+S" },
+      "description": "Capture the full scrolling page"
+    },
+    "capture-visible": {
+      "suggested_key": { "default": "Ctrl+Shift+V", "mac": "Command+Shift+V" },
+      "description": "Capture the visible area"
+    },
+    "capture-region": {
+      "suggested_key": { "default": "Ctrl+Shift+R", "mac": "Command+Shift+R" },
+      "description": "Capture a selected region"
+    }
+  }
+}

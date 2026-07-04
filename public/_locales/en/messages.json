@@ -1,0 +1,58 @@
+{
+  "extName": {
+    "message": "OpenScreenShot",
+    "description": "Extension name shown in Chrome UI."
+  },
+  "extDesc": {
+    "message": "Open-source screenshot tool — full-page, region, and visible-area capture with annotation and PDF export.",
+    "description": "Extension description shown in the Chrome Web Store and extensions page."
+  },
+  "modeFullPage": {
+    "message": "Full Page",
+    "description": "Capture mode: capture the entire scrolling page."
+  },
+  "modeVisible": {
+    "message": "Visible Area",
+    "description": "Capture mode: capture what is currently visible."
+  },
+  "modeRegion": {
+    "message": "Selected Region",
+    "description": "Capture mode: capture a user-dragged region."
+  },
+  "modeFullPageSub": {
+    "message": "Capture entire scrolling page",
+    "description": "Subtitle for the Full Page capture mode."
+  },
+  "modeVisibleSub": {
+    "message": "What you see right now",
+    "description": "Subtitle for the Visible Area capture mode."
+  },
+  "modeRegionSub": {
+    "message": "Click & drag to select",
+    "description": "Subtitle for the Selected Region capture mode."
+  },
+  "capturing": {
+    "message": "Capturing…",
+    "description": "Status shown while a capture is in progress."
+  },
+  "saved": {
+    "message": "Screenshot saved!",
+    "description": "Success toast after a screenshot is saved."
+  },
+  "cannotCaptureProtected": {
+    "message": "Can't screenshot this protected page.",
+    "description": "Error shown when the active page cannot be captured (e.g. chrome:// pages)."
+  },
+  "comingSoon": {
+    "message": "Coming in a later milestone.",
+    "description": "Placeholder message for features not yet implemented."
+  },
+  "welcomeTitle": {
+    "message": "Welcome to OpenScreenShot!",
+    "description": "Onboarding welcome card title."
+  },
+  "welcomeCta": {
+    "message": "Got it, let's go!",
+    "description": "Primary call-to-action on the welcome card."
+  }
+}
