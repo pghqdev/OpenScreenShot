@@ -4,6 +4,11 @@ import { DEFAULT_SETTINGS } from '../shared/types';
 import { getSettings, setSettings } from '../shared/storage';
 import { onPopupMessage, sendToBackground } from '../shared/messaging';
 
+// i18n helper
+function t(id: string): string {
+  return chrome.i18n.getMessage(id) ?? id;
+}
+
 type ToastTone = 'info' | 'success' | 'error';
 interface Toast {
   id: number;
@@ -14,32 +19,32 @@ interface Toast {
 interface ModeDef {
   id: CaptureMode;
   icon: string;
-  title: string;
-  subtitle: string;
   shortcut: string;
+  titleKey: string;
+  subtitleKey: string;
 }
 
 const MODES: ModeDef[] = [
   {
     id: 'full-page',
     icon: '📄',
-    title: 'Full Page',
-    subtitle: 'Capture entire scrolling page',
     shortcut: '⌘⇧S',
+    titleKey: 'modeFullPage',
+    subtitleKey: 'modeFullPageSub',
   },
   {
     id: 'visible',
     icon: '👁',
-    title: 'Visible Area',
-    subtitle: 'What you see right now',
     shortcut: '⌘⇧V',
+    titleKey: 'modeVisible',
+    subtitleKey: 'modeVisibleSub',
   },
   {
     id: 'region',
     icon: '✂️',
-    title: 'Selected Region',
-    subtitle: 'Click & drag to select',
     shortcut: '⌘⇧R',
+    titleKey: 'modeRegion',
+    subtitleKey: 'modeRegionSub',
   },
 ];
 
@@ -67,7 +72,6 @@ export function App() {
         case 'CAPTURE_COMPLETE':
           setBusy(null);
           setProgress(null);
-          // The editor opens in a new tab as the capture result — just close.
           window.close();
           break;
         case 'CAPTURE_ERROR':
@@ -99,7 +103,6 @@ export function App() {
     if (busy) return;
     setBusy(mode);
     if (mode === 'region') {
-      // Region needs the whole page visible: close the popup so the overlay shows.
       sendToBackground({ type: 'CAPTURE_REQUEST', mode }).catch(() => {});
       setTimeout(() => window.close(), 0);
       return;
@@ -108,7 +111,7 @@ export function App() {
     sendToBackground({ type: 'CAPTURE_REQUEST', mode }).catch(() => {
       setBusy(null);
       setProgress(null);
-      pushToast('Could not reach the background worker.', 'error');
+      pushToast(t('couldNotReach'), 'error');
     });
   }
 
@@ -125,13 +128,13 @@ export function App() {
           <>
             <button
               class="icon-btn"
-              title="Back"
-              aria-label="Back to capture modes"
+              title={t('backAria')}
+              aria-label={t('backAria')}
               onClick={() => setShowSettings(false)}
             >
               <BackMark />
             </button>
-            <span class="brand-name">Settings</span>
+            <span class="brand-name">{t('settingsTitle')}</span>
           </>
         ) : (
           <>
@@ -141,8 +144,8 @@ export function App() {
             </div>
             <button
               class="icon-btn"
-              title="Settings"
-              aria-label="Settings"
+              title={t('settingsTitle')}
+              aria-label={t('settingsTitle')}
               onClick={() => setShowSettings(true)}
             >
               <GearMark />
@@ -157,7 +160,7 @@ export function App() {
         <Welcome onDone={dismissWelcome} />
       ) : (
         <>
-          <nav class="modes" aria-label="Capture modes">
+          <nav class="modes" aria-label={t('captureModesAria')}>
             {MODES.map((m) => {
               const isBusy = busy === m.id;
               return (
@@ -172,16 +175,16 @@ export function App() {
                     {m.icon}
                   </span>
                   <span class="mode-text">
-                    <span class="mode-title">{m.title}</span>
+                    <span class="mode-title">{t(m.titleKey)}</span>
                     <span class="mode-sub">
                       {isBusy
                         ? m.id === 'full-page' && progress != null
-                          ? `Capturing… ${progress}%`
-                          : 'Capturing…'
-                        : m.subtitle}
+                          ? t('capturing') + ' ' + progress + '%'
+                          : t('capturing')
+                        : t(m.subtitleKey)}
                     </span>
                   </span>
-                  {isBusy ? <span class="spinner" aria-label="Capturing" /> : null}
+                  {isBusy ? <span class="spinner" aria-label={t('capturing')} /> : null}
                   {isBusy && m.id === 'full-page' && progress != null ? (
                     <div class="progress" aria-hidden="true">
                       <div class="progress-fill" style={{ width: `${progress}%` }} />
@@ -194,27 +197,27 @@ export function App() {
 
           <div class="divider" />
 
-          <div class="shortcuts" aria-label="Keyboard shortcuts">
+          <nav class="shortcuts" aria-label={t('captureShortcutsLabel')}>
             <div class="shortcut">
               <kbd>⌘⇧S</kbd>
-              <span>Full Page</span>
+              <span>{t('shortcutFullPage')}</span>
             </div>
             <div class="shortcut">
               <kbd>⌘⇧V</kbd>
-              <span>Visible</span>
+              <span>{t('shortcutVisible')}</span>
             </div>
             <div class="shortcut">
               <kbd>⌘⇧R</kbd>
-              <span>Region</span>
+              <span>{t('shortcutRegion')}</span>
             </div>
-          </div>
+          </nav>
         </>
       )}
 
       <div class="toasts" aria-live="polite">
-        {toasts.map((t) => (
-          <div key={t.id} class={`toast toast-${t.tone}`} role="status">
-            {t.message}
+        {toasts.map((toast) => (
+          <div key={toast.id} class={`toast toast-${toast.tone}`} role="status">
+            {toast.message}
           </div>
         ))}
       </div>
@@ -231,26 +234,27 @@ function SettingsView({
 }) {
   const showQuality = settings.defaultFormat === 'jpeg' || settings.defaultFormat === 'webp';
   const pdfDisabled = settings.pdfPageSize === 'full';
+
   return (
     <div class="settings">
       <div class="settings-row">
-        <span class="settings-label">Theme</span>
+        <span class="settings-label">{t('settingsTheme')}</span>
         <div class="seg">
-          {(['light', 'dark', 'system'] as const).map((t) => (
+          {(['light', 'dark', 'system'] as const).map((v) => (
             <button
-              key={t}
+              key={v}
               class="seg-btn"
-              aria-pressed={settings.theme === t}
-              onClick={() => onChange({ theme: t })}
+              aria-pressed={settings.theme === v}
+              onClick={() => onChange({ theme: v })}
             >
-              {cap(t)}
+              {t('theme' + v.charAt(0).toUpperCase() + v.slice(1))}
             </button>
           ))}
         </div>
       </div>
 
       <div class="settings-row">
-        <span class="settings-label">Default format</span>
+        <span class="settings-label">{t('settingsDefaultFormat')}</span>
         <div class="seg seg-wrap">
           {(['png', 'jpeg', 'webp', 'pdf'] as const).map((f) => (
             <button
@@ -259,7 +263,7 @@ function SettingsView({
               aria-pressed={settings.defaultFormat === f}
               onClick={() => onChange({ defaultFormat: f as ExportFormat })}
             >
-              {f.toUpperCase()}
+              {t('format' + f.charAt(0).toUpperCase() + f.slice(1))}
             </button>
           ))}
         </div>
@@ -267,7 +271,9 @@ function SettingsView({
 
       {showQuality ? (
         <div class="settings-row">
-          <span class="settings-label">Quality · {Math.round(settings.quality * 100)}%</span>
+          <span class="settings-label">
+            {t('settingsQuality')} · {Math.round(settings.quality * 100)}%
+          </span>
           <input
             class="range"
             type="range"
@@ -281,7 +287,7 @@ function SettingsView({
       ) : null}
 
       <div class="settings-row settings-row-col">
-        <span class="settings-label">Filename template</span>
+        <span class="settings-label">{t('settingsFilename')}</span>
         <input
           class="text-input"
           type="text"
@@ -289,13 +295,13 @@ function SettingsView({
           value={settings.filenameTemplate}
           onInput={(e) => onChange({ filenameTemplate: (e.target as HTMLInputElement).value })}
         />
-        <span class="settings-hint">Tokens: {'{date} {time} {title} {w} {h}'}</span>
+        <span class="settings-hint">{t('filenameHint')}</span>
       </div>
 
-      <div class="settings-section">PDF defaults</div>
+      <div class="settings-section">{t('settingsPdfDefaults')}</div>
 
       <div class="settings-row">
-        <span class="settings-label">Page size</span>
+        <span class="settings-label">{t('settingsPdfPageSize')}</span>
         <div class="seg">
           {(['a4', 'letter', 'full'] as const).map((p) => (
             <button
@@ -304,14 +310,14 @@ function SettingsView({
               aria-pressed={settings.pdfPageSize === p}
               onClick={() => onChange({ pdfPageSize: p })}
             >
-              {p === 'a4' ? 'A4' : cap(p)}
+              {t('pdfPageSize' + p.charAt(0).toUpperCase() + p.slice(1))}
             </button>
           ))}
         </div>
       </div>
 
       <div class="settings-row">
-        <span class="settings-label">Orientation</span>
+        <span class="settings-label">{t('settingsPdfOrientation')}</span>
         <div class="seg">
           {(['portrait', 'landscape'] as const).map((o) => (
             <button
@@ -321,7 +327,7 @@ function SettingsView({
               disabled={pdfDisabled}
               onClick={() => onChange({ pdfOrientation: o })}
             >
-              {cap(o)}
+              {t('pdfOrientation' + o.charAt(0).toUpperCase() + o.slice(1))}
             </button>
           ))}
         </div>
@@ -335,10 +341,10 @@ function SettingsView({
             disabled={pdfDisabled}
             onChange={(e) => onChange({ pdfMultiPage: (e.target as HTMLInputElement).checked })}
           />
-          Multi-page
+          {t('pdfMultiPage')}
         </label>
         <label class="check-label">
-          Margin
+          {t('pdfMargin')}
           <input
             class="num-input"
             type="number"
@@ -352,15 +358,9 @@ function SettingsView({
           mm
         </label>
       </div>
-      {pdfDisabled ? (
-        <span class="settings-hint">“Full” sizes the page to the image, so these don’t apply.</span>
-      ) : null}
+      {pdfDisabled ? <span class="settings-hint">{t('pdfFullHint')}</span> : null}
     </div>
   );
-}
-
-function cap(s: string): string {
-  return s.charAt(0).toUpperCase() + s.slice(1);
 }
 
 function Welcome({ onDone }: { onDone: () => void }) {
@@ -369,28 +369,16 @@ function Welcome({ onDone }: { onDone: () => void }) {
       <div class="welcome-emoji" aria-hidden="true">
         🎉
       </div>
-      <h2 class="welcome-title">Welcome to OpenScreenShot!</h2>
-      <p class="welcome-lede">
-        Capture full-length screenshots of any webpage — even long-scrolling pages — annotate them,
-        and export as PNG or PDF.
-      </p>
+      <h2 class="welcome-title">{t('welcomeTitle')}</h2>
+      <p class="welcome-lede">{t('welcomeLede')}</p>
       <ul class="welcome-list">
-        <li>
-          <b>📄 Full Page</b> — Scroll &amp; stitch the entire page, top to bottom
-        </li>
-        <li>
-          <b>👁 Visible</b> — Just what you see now
-        </li>
-        <li>
-          <b>✂️ Region</b> — Drag to select an area
-        </li>
+        <li>{t('welcomeList1')}</li>
+        <li>{t('welcomeList2')}</li>
+        <li>{t('welcomeList3')}</li>
       </ul>
-      <p class="welcome-perm">
-        🔒 We need permission to read page content for screenshots. Your data never leaves your
-        device.
-      </p>
+      <p class="welcome-perm">{t('welcomePerm')}</p>
       <button class="btn-primary" onClick={onDone}>
-        Got it, let&rsquo;s go!
+        {t('welcomeCta')}
       </button>
     </div>
   );

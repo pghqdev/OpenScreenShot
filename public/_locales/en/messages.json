@@ -11,36 +11,32 @@
     "message": "Full Page",
     "description": "Capture mode: capture the entire scrolling page."
   },
-  "modeVisible": {
-    "message": "Visible Area",
-    "description": "Capture mode: capture what is currently visible."
-  },
-  "modeRegion": {
-    "message": "Selected Region",
-    "description": "Capture mode: capture a user-dragged region."
-  },
   "modeFullPageSub": {
     "message": "Capture entire scrolling page",
     "description": "Subtitle for the Full Page capture mode."
   },
+  "modeVisible": {
+    "message": "Visible Area",
+    "description": "Capture mode: capture what is currently visible."
+  },
   "modeVisibleSub": {
     "message": "What you see right now",
     "description": "Subtitle for the Visible Area capture mode."
+  },
+  "modeRegion": {
+    "message": "Selected Region",
+    "description": "Capture mode: capture a user-dragged region."
   },
   "modeRegionSub": {
     "message": "Click & drag to select",
     "description": "Subtitle for the Selected Region capture mode."
   },
   "capturing": {
-    "message": "Capturing…",
+    "message": "Capturing\u2026",
     "description": "Status shown while a capture is in progress."
   },
-  "saved": {
-    "message": "Screenshot saved!",
-    "description": "Success toast after a screenshot is saved."
-  },
   "cannotCaptureProtected": {
-    "message": "Can't screenshot this protected page.",
+    "message": "Can\u2019t screenshot this protected page.",
     "description": "Error shown when the active page cannot be captured (e.g. chrome:// pages)."
   },
   "comingSoon": {
@@ -51,8 +47,152 @@
     "message": "Welcome to OpenScreenShot!",
     "description": "Onboarding welcome card title."
   },
+  "welcomeLede": {
+    "message": "Capture full-length screenshots of any webpage \u2014 even long-scrolling pages \u2014 annotate them, and export as PNG or PDF.",
+    "description": "Welcome card description text."
+  },
+  "welcomeList1": {
+    "message": "\ud83d\udcc4 Full Page \u2014 Scroll & stitch the entire page, top to bottom",
+    "description": "Welcome card feature list item 1"
+  },
+  "welcomeList2": {
+    "message": "\ud83d\udc41 Visible \u2014 Just what you see now",
+    "description": "Welcome card feature list item 2"
+  },
+  "welcomeList3": {
+    "message": "\u2702\ufe0f Region \u2014 Drag to select an area",
+    "description": "Welcome card feature list item 3"
+  },
+  "welcomePerm": {
+    "message": "\ud83d\udd12 We need permission to read page content for screenshots. Your data never leaves your device.",
+    "description": "Welcome card permission notice."
+  },
   "welcomeCta": {
-    "message": "Got it, let's go!",
+    "message": "Got it, let\u2019s go!",
     "description": "Primary call-to-action on the welcome card."
+  },
+  "shortcutFullPage": {
+    "message": "Full Page",
+    "description": "Shortcut label for Full Page capture mode."
+  },
+  "shortcutVisible": {
+    "message": "Visible",
+    "description": "Shortcut label for Visible Area capture mode."
+  },
+  "shortcutRegion": {
+    "message": "Region",
+    "description": "Shortcut label for Selected Region capture mode."
+  },
+  "settingsTitle": {
+    "message": "Settings",
+    "description": "Settings panel heading."
+  },
+  "settingsTheme": {
+    "message": "Theme",
+    "description": "Theme setting label."
+  },
+  "themeLight": {
+    "message": "Light",
+    "description": "Light theme option label."
+  },
+  "themeDark": {
+    "message": "Dark",
+    "description": "Dark theme option label."
+  },
+  "themeSystem": {
+    "message": "System",
+    "description": "System-follows theme option label."
+  },
+  "settingsDefaultFormat": {
+    "message": "Default format",
+    "description": "Default export format setting label."
+  },
+  "formatPng": {
+    "message": "PNG",
+    "description": "PNG format option."
+  },
+  "formatJpeg": {
+    "message": "JPEG",
+    "description": "JPEG format option."
+  },
+  "formatWebp": {
+    "message": "WebP",
+    "description": "WebP format option."
+  },
+  "formatPdf": {
+    "message": "PDF",
+    "description": "PDF format option."
+  },
+  "settingsQuality": {
+    "message": "Quality",
+    "description": "Export quality setting label."
+  },
+  "settingsFilename": {
+    "message": "Filename template",
+    "description": "Filename template setting label."
+  },
+  "filenameHint": {
+    "message": "Tokens: {date} {time} {title} {w} {h}",
+    "description": "Help text for filename template tokens."
+  },
+  "settingsPdfDefaults": {
+    "message": "PDF defaults",
+    "description": "PDF defaults section heading."
+  },
+  "settingsPdfPageSize": {
+    "message": "Page size",
+    "description": "PDF page size setting label."
+  },
+  "pdfPageSizeA4": {
+    "message": "A4",
+    "description": "A4 page size option."
+  },
+  "pdfPageSizeLetter": {
+    "message": "Letter",
+    "description": "Letter page size option."
+  },
+  "pdfPageSizeFull": {
+    "message": "Full",
+    "description": "Full page size option (auto-sized to image)."
+  },
+  "settingsPdfOrientation": {
+    "message": "Orientation",
+    "description": "PDF orientation setting label."
+  },
+  "pdfOrientationPortrait": {
+    "message": "Portrait",
+    "description": "Portrait orientation option."
+  },
+  "pdfOrientationLandscape": {
+    "message": "Landscape",
+    "description": "Landscape orientation option."
+  },
+  "pdfMultiPage": {
+    "message": "Multi-page",
+    "description": "Multi-page PDF option label."
+  },
+  "pdfMargin": {
+    "message": "Margin",
+    "description": "PDF margin setting label."
+  },
+  "pdfFullHint": {
+    "message": "Full sizes the page to the image, so these don\u2019t apply.",
+    "description": "Hint when Full page size is selected."
+  },
+  "couldNotReach": {
+    "message": "Could not reach the background worker.",
+    "description": "Error toast when the background service worker is unreachable."
+  },
+  "backAria": {
+    "message": "Back to capture modes",
+    "description": "Accessible label for the back button in settings."
+  },
+  "captureModesAria": {
+    "message": "Capture modes",
+    "description": "Accessible label for the capture mode buttons."
+  },
+  "captureShortcutsLabel": {
+    "message": "Keyboard shortcuts",
+    "description": "Heading for the keyboard shortcuts section."
   }
 }
