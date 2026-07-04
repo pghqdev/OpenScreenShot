@@ -1,0 +1,43 @@
+{
+  "name": "openscreenshot",
+  "version": "0.1.0",
+  "description": "Open-source screenshot tool for Chrome — full-page, region, and visible-area capture with annotation and PDF export.",
+  "license": "MIT",
+  "type": "module",
+  "private": true,
+  "author": "OpenScreenShot Contributors",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/pghqdev/OpenScreenShot"
+  },
+  "scripts": {
+    "icons": "node scripts/generate-icons.mjs",
+    "dev": "vite",
+    "typecheck": "tsc --noEmit",
+    "lint": "eslint .",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "build": "tsc --noEmit && vite build",
+    "package": "npm run build && cd dist && zip -r -X ../openscreenshot-v$npm_package_version.zip ."
+  },
+  "dependencies": {
+    "preact": "^10.29.4"
+  },
+  "devDependencies": {
+    "@crxjs/vite-plugin": "^2.7.1",
+    "@eslint/js": "^9.39.4",
+    "@preact/preset-vite": "^2.10.5",
+    "@types/chrome": "^0.2.2",
+    "eslint": "^9.39.4",
+    "eslint-config-prettier": "^10.1.8",
+    "globals": "^17.7.0",
+    "prettier": "^3.9.4",
+    "sharp": "^0.35.3",
+    "typescript": "^5.9.3",
+    "typescript-eslint": "^8.62.1",
+    "vite": "^7.3.6",
+    "vitest": "^4.1.9"
+  }
+}
