@@ -1,7 +1,7 @@
 /**
- * PDF export (lazy-loaded jsPDF). The controller composites the image +
- * annotations at full resolution (composeFinal); this module lays them out into
- * a PDF using one of three page-sizing strategies:
+ * PDF export. The controller composites the image + annotations at full
+ * resolution (composeFinal); this module lays them out into a PDF using one of
+ * three page-sizing strategies:
  *
  *  - "full": a single custom page matching the image's exact aspect ratio.
  *  - "a4"/"letter" single: the whole image fit onto one page, centered.
@@ -10,6 +10,8 @@
  *    becomes its own page. Slicing keeps the PDF small (one image per page
  *    instead of embedding the full image on every page).
  */
+import { buildPdf, type PdfPage } from './pdf-writer';
+
 export interface PdfOptions {
   pageSize: 'a4' | 'letter' | 'full';
   orientation: 'portrait' | 'landscape';
@@ -23,25 +25,29 @@ const PAGE_SIZES_MM: Record<'a4' | 'letter', [number, number]> = {
 };
 
 const PX_TO_MM = 25.4 / 96;
+const MM_TO_PT = 72 / 25.4;
 const OVERLAP_MM = 5;
+
+const pt = (mm: number) => mm * MM_TO_PT;
 
 export async function exportPdf(
   canvas: HTMLCanvasElement,
   opts: PdfOptions,
   filename: string,
 ): Promise<void> {
-  const { jsPDF } = await import('jspdf');
   const imgW = canvas.width;
   const imgH = canvas.height;
   const imgWmm = imgW * PX_TO_MM;
   const imgHmm = imgH * PX_TO_MM;
-  const dataUrl = canvas.toDataURL('image/png');
+  const pages: PdfPage[] = [];
 
   if (opts.pageSize === 'full') {
-    const orientation = imgWmm >= imgHmm ? 'l' : 'p';
-    const doc = new jsPDF({ unit: 'mm', format: [imgWmm, imgHmm], orientation });
-    doc.addImage(dataUrl, 'PNG', 0, 0, imgWmm, imgHmm);
-    await savePdf(doc, filename);
+    pages.push({
+      widthPt: pt(imgWmm),
+      heightPt: pt(imgHmm),
+      image: { canvas, xPt: 0, yPt: 0, wPt: pt(imgWmm), hPt: pt(imgHmm) },
+    });
+    await savePdf(pages, filename);
     return;
   }
 
@@ -49,11 +55,6 @@ export async function exportPdf(
   const landscape = opts.orientation === 'landscape';
   const pageWmm = landscape ? ph : pw;
   const pageHmm = landscape ? pw : ph;
-  const doc = new jsPDF({
-    unit: 'mm',
-    format: opts.pageSize,
-    orientation: landscape ? 'l' : 'p',
-  });
   const margin = opts.marginMm;
   const contentW = pageWmm - margin * 2;
   const contentHmm = pageHmm - margin * 2;
@@ -66,8 +67,18 @@ export async function exportPdf(
     const s = Math.min(contentW / imgWmm, contentHmm / imgHmm);
     const w = imgWmm * s;
     const h = imgHmm * s;
-    doc.addImage(dataUrl, 'PNG', (pageWmm - w) / 2, (pageHmm - h) / 2, w, h);
-    await savePdf(doc, filename);
+    pages.push({
+      widthPt: pt(pageWmm),
+      heightPt: pt(pageHmm),
+      image: {
+        canvas,
+        xPt: pt((pageWmm - w) / 2),
+        yPt: pt((pageHmm - h) / 2),
+        wPt: pt(w),
+        hPt: pt(h),
+      },
+    });
+    await savePdf(pages, filename);
     return;
   }
 
@@ -75,17 +86,26 @@ export async function exportPdf(
   const contentHpx = contentHmm / mmPerPx;
   const overlapPx = OVERLAP_MM / mmPerPx;
   const stepPx = Math.max(1, contentHpx - overlapPx);
-  const pages = Math.max(1, Math.ceil((imgH - overlapPx) / stepPx));
-  for (let i = 0; i < pages; i++) {
+  const pageCount = Math.max(1, Math.ceil((imgH - overlapPx) / stepPx));
+  for (let i = 0; i < pageCount; i++) {
     const srcY = Math.round(i * stepPx);
     if (srcY >= imgH) break;
     const srcH = Math.min(Math.round(contentHpx), imgH - srcY);
     if (srcH <= 0) break;
-    if (i > 0) doc.addPage();
     const tile = sliceCanvas(canvas, 0, srcY, imgW, srcH);
-    doc.addImage(tile.toDataURL('image/png'), 'PNG', margin, margin, contentW, srcH * mmPerPx);
+    pages.push({
+      widthPt: pt(pageWmm),
+      heightPt: pt(pageHmm),
+      image: {
+        canvas: tile,
+        xPt: pt(margin),
+        yPt: pt(margin),
+        wPt: pt(contentW),
+        hPt: pt(srcH * mmPerPx),
+      },
+    });
   }
-  await savePdf(doc, filename);
+  await savePdf(pages, filename);
 }
 
 function sliceCanvas(
@@ -104,8 +124,8 @@ function sliceCanvas(
   return c;
 }
 
-async function savePdf(doc: import('jspdf').jsPDF, filename: string): Promise<void> {
-  const blob = doc.output('blob');
+async function savePdf(pages: PdfPage[], filename: string): Promise<void> {
+  const blob = await buildPdf(pages);
   const url = URL.createObjectURL(blob);
   try {
     await chrome.downloads.download({ url, filename, saveAs: false });

@@ -20,10 +20,9 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "build": "tsc --noEmit && vite build",
-    "package": "npm run build && cd dist && zip -r -X ../openscreenshot-v$npm_package_version.zip ."
+    "package": "npm run build && rm -f openscreenshot-v$npm_package_version.zip && cd dist && zip -r -X ../openscreenshot-v$npm_package_version.zip ."
   },
   "dependencies": {
-    "jspdf": "^4.2.1",
     "preact": "^10.29.4"
   },
   "devDependencies": {
