@@ -223,7 +223,7 @@
         border-radius: 8px;
         background: var(--grad-brand);
         color: #fff;
-        box-shadow: var(--shadow-brand);
+        box-shadow: 0 1px 4px rgba(0, 113, 227, 0.25);
       }
       .nav-links {
         display: flex;
@@ -242,10 +242,19 @@
       }
       .nav-links .btn {
         margin-left: var(--s-1);
+        height: 38px;
+        padding: 0 16px;
+        font-size: 14px;
+        border-radius: var(--r-sm);
       }
-      .nav-links .btn-primary,
+      .nav-links .btn-primary {
+        color: #fff;
+        box-shadow: 0 2px 8px rgba(0, 113, 227, 0.22);
+      }
       .nav-links .btn-primary:hover {
         color: #fff;
+        transform: translateY(-1px);
+        box-shadow: 0 4px 14px rgba(0, 113, 227, 0.3);
       }
       @media (max-width: 640px) {
         .nav-links .hide-sm {
@@ -362,6 +371,11 @@
         margin-top: var(--s-4);
         font-size: 13px;
         color: var(--text-3);
+      }
+      .launch-badge {
+        margin-top: var(--s-5);
+        display: flex;
+        justify-content: center;
       }
 
       /* Hero shot */
@@ -861,6 +875,25 @@
             </a>
           </div>
           <div class="cta-note">No account. No upload. No telemetry.</div>
+          <div class="launch-badge">
+            <a
+              href="https://fazier.com/launches/openscreenshot.app"
+              target="_blank"
+              rel="noopener"
+            >
+              <picture>
+                <source
+                  media="(prefers-color-scheme: light)"
+                  srcset="https://fazier.com/api/v1//public/badges/launch_badges.svg?badge_type=launched&theme=light"
+                />
+                <img
+                  src="https://fazier.com/api/v1//public/badges/launch_badges.svg?badge_type=launched&theme=dark"
+                  width="120"
+                  alt="Featured on Fazier"
+                />
+              </picture>
+            </a>
+          </div>
         </div>
 
         <div class="hero-shot">
