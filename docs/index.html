@@ -243,6 +243,10 @@
       .nav-links .btn {
         margin-left: var(--s-1);
       }
+      .nav-links .btn-primary,
+      .nav-links .btn-primary:hover {
+        color: #fff;
+      }
       @media (max-width: 640px) {
         .nav-links .hide-sm {
           display: none;
@@ -769,12 +773,29 @@
             >GitHub</a
           >
           <a
-            class="btn btn-primary btn-sm"
+            class="btn btn-primary"
             href="https://chromewebstore.google.com/detail/hdabbojjccojlapnfjpdppcpfcnhgmdp"
             target="_blank"
             rel="noopener"
-            >Add to Chrome</a
           >
+            <svg width="20" height="20" viewBox="0 0 48 48" aria-hidden="true">
+              <circle cx="24" cy="24" r="10" fill="#fff" />
+              <path
+                d="M7.42 12.82 A20 20 0 0 1 40.58 12.82 L32.29 18.41 A10 10 0 0 0 15.71 18.41 Z"
+                fill="#EA4335"
+              />
+              <path
+                d="M41.98 15.24 A20 20 0 0 1 25.40 43.95 L24.70 33.98 A10 10 0 0 0 32.99 19.62 Z"
+                fill="#FBBC05"
+              />
+              <path
+                d="M22.60 43.95 A20 20 0 0 1 6.02 15.24 L15.01 19.62 A10 10 0 0 0 23.30 33.98 Z"
+                fill="#34A853"
+              />
+              <circle cx="24" cy="24" r="8" fill="#4285F4" />
+            </svg>
+            Add to Chrome — Free
+          </a>
         </div>
       </nav>
     </div>
