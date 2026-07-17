@@ -48,6 +48,12 @@ export interface Metrics {
   viewportHeight: number;
   viewportWidth: number;
   devicePixelRatio: number;
+  /**
+   * Viewport-relative CSS-px rect of the inner scroll container, when the page
+   * scrolls an element rather than the document (common in SPAs). Tiles are
+   * cropped to this rect. `null` means the document itself scrolls.
+   */
+  container: PageRect | null;
 }
 
 /** A rectangle in CSS pixels (viewport-relative for region select). */

@@ -163,7 +163,16 @@ async function captureFullPage(tab: chrome.tabs.Tab): Promise<void> {
 
   const positions = computeScrollPositions(metrics.scrollHeight, metrics.viewportHeight);
   const windowId = tab.windowId ?? chrome.windows.WINDOW_ID_CURRENT;
-  const canvasWidth = Math.round(metrics.viewportWidth * dpr);
+  // When an inner element scrolls, crop each viewport tile to its rect (device px).
+  const crop = metrics.container
+    ? {
+        x: Math.round(metrics.container.x * dpr),
+        y: Math.round(metrics.container.y * dpr),
+        w: Math.round(metrics.container.width * dpr),
+        h: Math.round(metrics.container.height * dpr),
+      }
+    : null;
+  const canvasWidth = crop ? crop.w : Math.round(metrics.viewportWidth * dpr);
 
   // Disable smooth scrolling (but keep fixed elements visible) for the first tile.
   await runInTab(tabId, prepareCapture, []);
@@ -197,7 +206,7 @@ async function captureFullPage(tab: chrome.tabs.Tab): Promise<void> {
     await runInTab(tabId, restoreCapture, []);
   }
 
-  const dataUrl = await execInTab(tabId, stitchTiles, [tiles, canvasWidth, canvasHeight]);
+  const dataUrl = await execInTab(tabId, stitchTiles, [tiles, canvasWidth, canvasHeight, crop]);
   await handoffToEditor(dataUrl, canvasWidth, canvasHeight, 'full-page', tab.title ?? '');
   broadcast({
     type: 'CAPTURE_COMPLETE',
