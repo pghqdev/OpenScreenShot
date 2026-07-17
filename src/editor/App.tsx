@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'preact/hooks';
-import { useEditor } from './useEditor';
+import { isTypingTarget, useEditor } from './useEditor';
 import { TOOL_LIST, type Tool } from './tools';
 import { IMAGE_FORMATS, type ImageFormat } from './export';
 import type { PdfOptions } from './pdf';
@@ -19,6 +19,19 @@ export function App() {
       .catch(() => setCopyState('failed'))
       .finally(() => setTimeout(() => setCopyState('idle'), 1500));
   }
+
+  // Cmd/Ctrl+C copies the composed image, unless the user is typing or has
+  // text selected (native copy wins there).
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if (!(e.metaKey || e.ctrlKey) || e.key !== 'c') return;
+      if (isTypingTarget(e.target) || window.getSelection()?.toString()) return;
+      e.preventDefault();
+      copyToClipboard();
+    };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [ed.copyImage]);
   const cursor = ed.spaceHeld
     ? 'grab'
     : ed.tool === 'text'
