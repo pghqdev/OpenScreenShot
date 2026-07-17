@@ -9,6 +9,11 @@ function t(id: string): string {
   return chrome.i18n.getMessage(id) ?? id;
 }
 
+// chrome:// URLs can't be opened via <a href>; tabs.create works from the popup.
+function openShortcutSettings() {
+  void chrome.tabs.create({ url: 'chrome://extensions/shortcuts' });
+}
+
 type ToastTone = 'info' | 'success' | 'error';
 interface Toast {
   id: number;
@@ -19,7 +24,7 @@ interface Toast {
 interface ModeDef {
   id: CaptureMode;
   icon: string;
-  shortcut: string;
+  command: string;
   titleKey: string;
   subtitleKey: string;
 }
@@ -28,21 +33,21 @@ const MODES: ModeDef[] = [
   {
     id: 'full-page',
     icon: '📄',
-    shortcut: '⌘⇧S',
+    command: 'capture-full-page',
     titleKey: 'modeFullPage',
     subtitleKey: 'modeFullPageSub',
   },
   {
     id: 'visible',
     icon: '👁',
-    shortcut: '⌘⇧V',
+    command: 'capture-visible',
     titleKey: 'modeVisible',
     subtitleKey: 'modeVisibleSub',
   },
   {
     id: 'region',
     icon: '✂️',
-    shortcut: '⌘⇧R',
+    command: 'capture-region',
     titleKey: 'modeRegion',
     subtitleKey: 'modeRegionSub',
   },
@@ -55,6 +60,7 @@ export function App() {
   const [busy, setBusy] = useState<CaptureMode | null>(null);
   const [progress, setProgress] = useState<number | null>(null);
   const [toasts, setToasts] = useState<Toast[]>([]);
+  const [shortcuts, setShortcuts] = useState<Record<string, string>>({});
 
   // Load settings + apply theme on mount.
   useEffect(() => {
@@ -62,6 +68,12 @@ export function App() {
       setSettingsState(s);
       setShowWelcome(s.showOnboarding);
       applyTheme(s.theme);
+    });
+    // Actual (possibly user-remapped) bindings, formatted per platform by Chrome.
+    void chrome.commands.getAll().then((cmds) => {
+      const map: Record<string, string> = {};
+      for (const c of cmds) if (c.name && c.shortcut) map[c.name] = c.shortcut;
+      setShortcuts(map);
     });
   }, []);
 
@@ -184,7 +196,11 @@ export function App() {
                         : t(m.subtitleKey)}
                     </span>
                   </span>
-                  {isBusy ? <span class="spinner" aria-label={t('capturing')} /> : null}
+                  {isBusy ? (
+                    <span class="spinner" aria-label={t('capturing')} />
+                  ) : shortcuts[m.command] ? (
+                    <kbd>{shortcuts[m.command]}</kbd>
+                  ) : null}
                   {isBusy && m.id === 'full-page' && progress != null ? (
                     <div class="progress" aria-hidden="true">
                       <div class="progress-fill" style={{ width: `${progress}%` }} />
@@ -197,20 +213,9 @@ export function App() {
 
           <div class="divider" />
 
-          <nav class="shortcuts" aria-label={t('captureShortcutsLabel')}>
-            <div class="shortcut">
-              <kbd>⌘⇧S</kbd>
-              <span>{t('shortcutFullPage')}</span>
-            </div>
-            <div class="shortcut">
-              <kbd>⌘⇧V</kbd>
-              <span>{t('shortcutVisible')}</span>
-            </div>
-            <div class="shortcut">
-              <kbd>⌘⇧R</kbd>
-              <span>{t('shortcutRegion')}</span>
-            </div>
-          </nav>
+          <button class="link-btn" onClick={openShortcutSettings}>
+            {t('customizeShortcuts')}
+          </button>
         </>
       )}
 
@@ -251,6 +256,13 @@ function SettingsView({
             </button>
           ))}
         </div>
+      </div>
+
+      <div class="settings-row">
+        <span class="settings-label">{t('settingsShortcuts')}</span>
+        <button class="link-btn" onClick={openShortcutSettings}>
+          {t('customizeShortcuts')}
+        </button>
       </div>
 
       <div class="settings-row">

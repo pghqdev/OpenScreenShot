@@ -34,7 +34,7 @@
       "description": "Capture the full scrolling page"
     },
     "capture-visible": {
-      "suggested_key": { "default": "Ctrl+Shift+V", "mac": "Command+Shift+V" },
+      "suggested_key": { "default": "Alt+Shift+V", "mac": "Command+Shift+V" },
       "description": "Capture the visible area"
     },
     "capture-region": {

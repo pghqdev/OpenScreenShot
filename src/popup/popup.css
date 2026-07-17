@@ -331,30 +331,38 @@ body {
 }
 
 /* ---- Shortcuts ---- */
-.shortcuts {
-  display: flex;
-  flex-direction: column;
-  gap: var(--s-1);
-}
-
-.shortcut {
-  display: flex;
-  align-items: center;
-  gap: var(--s-2);
-  font-size: 12px;
-  color: var(--text-2);
-}
-
-.shortcut kbd {
+.mode-card kbd {
   font-family: var(--font-mono);
   font-size: 11px;
   background: var(--surface-3);
-  color: var(--text-1);
+  color: var(--text-2);
   border: 1px solid var(--border);
   border-radius: var(--r-sm);
   padding: 1px 6px;
-  min-width: 44px;
-  text-align: center;
+  flex: 0 0 auto;
+  white-space: nowrap;
+}
+
+.link-btn {
+  align-self: center;
+  border: none;
+  background: transparent;
+  color: var(--text-2);
+  font-size: 12px;
+  cursor: pointer;
+  padding: 2px 4px;
+  border-radius: var(--r-sm);
+  transition: color 150ms ease-out;
+}
+
+.link-btn:hover {
+  color: var(--accent);
+  text-decoration: underline;
+}
+
+.link-btn:focus-visible {
+  outline: 2px solid var(--border-focus);
+  outline-offset: 2px;
 }
 
 /* ---- Welcome / onboarding ---- */
