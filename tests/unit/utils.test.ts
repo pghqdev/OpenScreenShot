@@ -38,6 +38,7 @@ describe('isProtectedUrl', () => {
   });
   it('blocks the web store', () => {
     expect(isProtectedUrl('https://chrome.google.com/webstore/detail/x')).toBe(true);
+    expect(isProtectedUrl('https://chromewebstore.google.com/detail/x')).toBe(true);
   });
   it('allows normal https pages', () => {
     expect(isProtectedUrl('https://example.com')).toBe(false);

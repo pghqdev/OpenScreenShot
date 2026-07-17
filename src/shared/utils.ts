@@ -39,7 +39,11 @@ export function isProtectedUrl(url: string | undefined): boolean {
   return (
     url.startsWith('chrome://') ||
     url.startsWith('chrome-extension://') ||
+    url.startsWith('edge://') ||
+    url.startsWith('devtools://') ||
+    url.startsWith('about:') ||
+    // Chrome blocks script injection on both Web Store hosts (old + current).
     url.startsWith('https://chrome.google.com/webstore') ||
-    url.startsWith('about:')
+    url.startsWith('https://chromewebstore.google.com')
   );
 }
