@@ -65,6 +65,37 @@ export function selectRegion(): Promise<PageRect | null> {
       root.appendChild(el);
     }
 
+    // Action bar: makes the next step obvious once a region is drawn.
+    const bar = doc.createElement('div');
+    bar.style.cssText =
+      'position:absolute;display:none;gap:6px;align-items:center;pointer-events:auto;' +
+      'background:rgba(17,17,17,0.92);padding:5px;border-radius:8px;' +
+      'box-shadow:0 4px 16px rgba(0,0,0,0.35);' +
+      'font:600 12px/1 system-ui,-apple-system,Segoe UI,Roboto,sans-serif;';
+    const captureBtn = doc.createElement('button');
+    captureBtn.textContent = 'Capture';
+    captureBtn.style.cssText =
+      'border:none;border-radius:5px;padding:6px 12px;background:#2f80ed;color:#fff;' +
+      'font:inherit;cursor:pointer;';
+    const cancelBtn = doc.createElement('button');
+    cancelBtn.textContent = 'Cancel';
+    cancelBtn.style.cssText =
+      'border:none;border-radius:5px;padding:6px 10px;background:transparent;color:#cfcfcf;' +
+      'font:inherit;cursor:pointer;';
+    bar.appendChild(captureBtn);
+    bar.appendChild(cancelBtn);
+    root.appendChild(bar);
+
+    const confirm = () => {
+      if (rect && rect.w >= 2 && rect.h >= 2) {
+        finish({ x: rect.x, y: rect.y, width: rect.w, height: rect.h });
+      }
+    };
+    // Keep clicks off the selection layer (which would start a new drag).
+    bar.addEventListener('mousedown', (e) => e.stopPropagation());
+    captureBtn.addEventListener('click', confirm);
+    cancelBtn.addEventListener('click', () => finish(null));
+
     doc.body.appendChild(root);
 
     const finish = (result: PageRect | null) => {
@@ -81,6 +112,7 @@ export function selectRegion(): Promise<PageRect | null> {
       if (!rect) {
         mask.style.display = 'none';
         readout.style.display = 'none';
+        bar.style.display = 'none';
         for (const h of handles) h.el.style.display = 'none';
         return;
       }
@@ -102,6 +134,18 @@ export function selectRegion(): Promise<PageRect | null> {
       const ry = y - 26 < 0 ? y + h + 6 : y - 26;
       readout.style.left = `${rx}px`;
       readout.style.top = `${ry}px`;
+
+      // Action bar: shown only when idle (not mid-drag). Below the selection,
+      // flipped above if there's no room, right-aligned to the selection.
+      if (mode === null) {
+        bar.style.display = 'flex';
+        const bx = clamp(x + w - 150, 6, VW - 150);
+        const by = y + h + 8 + 40 > VH ? Math.max(6, y - 48) : y + h + 8;
+        bar.style.left = `${bx}px`;
+        bar.style.top = `${by}px`;
+      } else {
+        bar.style.display = 'none';
+      }
     };
 
     const setRect = (x: number, y: number, w: number, h: number) => {
@@ -179,6 +223,7 @@ export function selectRegion(): Promise<PageRect | null> {
     const onUp = () => {
       mode = null;
       handle = null;
+      render(); // reveal the action bar now that dragging stopped
     };
 
     const onKeyDown = (e: KeyboardEvent) => {
@@ -189,9 +234,7 @@ export function selectRegion(): Promise<PageRect | null> {
       }
       if (e.key === 'Enter') {
         e.preventDefault();
-        if (rect && rect.w >= 2 && rect.h >= 2) {
-          finish({ x: rect.x, y: rect.y, width: rect.w, height: rect.h });
-        }
+        confirm();
         return;
       }
       if (!rect) return;
