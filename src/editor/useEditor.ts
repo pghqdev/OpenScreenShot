@@ -666,6 +666,17 @@ export function useEditor() {
     [],
   );
 
+  // Copy the composed image (with annotations) to the clipboard as PNG —
+  // the only ClipboardItem image type reliably supported across browsers.
+  const copyImage = useCallback(async () => {
+    const c = controllerRef.current;
+    if (!c || !c.image) return;
+    const canvas = c.composeFinal();
+    const blob = await new Promise<Blob | null>((resolve) => canvas.toBlob(resolve, 'image/png'));
+    if (!blob) throw new Error('Could not encode PNG');
+    await navigator.clipboard.write([new ClipboardItem({ 'image/png': blob })]);
+  }, []);
+
   const exportPdf = useCallback(async (opts: PdfOptions, filenameBase: string) => {
     const c = controllerRef.current;
     if (!c || !c.image) return;
@@ -741,6 +752,7 @@ export function useEditor() {
     deleteSelection,
     exportImage,
     exportPdf,
+    copyImage,
     defaultFilename,
     exporting,
     settings,

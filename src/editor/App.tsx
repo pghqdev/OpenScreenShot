@@ -11,6 +11,14 @@ type DialogFormat = ImageFormat | 'pdf';
 export function App() {
   const ed = useEditor();
   const [exportOpen, setExportOpen] = useState(false);
+  const [copyState, setCopyState] = useState<'idle' | 'copied' | 'failed'>('idle');
+
+  function copyToClipboard() {
+    ed.copyImage()
+      .then(() => setCopyState('copied'))
+      .catch(() => setCopyState('failed'))
+      .finally(() => setTimeout(() => setCopyState('idle'), 1500));
+  }
   const cursor = ed.spaceHeld
     ? 'grab'
     : ed.tool === 'text'
@@ -59,6 +67,14 @@ export function App() {
               100%
             </button>
           </div>
+          <button
+            class="btn-secondary"
+            title="Copy to clipboard as PNG"
+            disabled={!ed.capture}
+            onClick={copyToClipboard}
+          >
+            {copyState === 'copied' ? 'Copied ✓' : copyState === 'failed' ? 'Copy failed' : 'Copy'}
+          </button>
           <button
             class="btn-primary"
             title="Export"
