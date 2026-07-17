@@ -1,0 +1,516 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Documentation — OpenScreenShot</title>
+    <meta
+      name="description"
+      content="OpenScreenShot documentation. How to install, capture, annotate, and export screenshots with the open-source Chrome extension."
+    />
+    <link rel="canonical" href="https://openscreenshot.app/docs/" />
+    <meta name="theme-color" content="#ffffff" media="(prefers-color-scheme: light)" />
+    <meta name="theme-color" content="#0b0b0d" media="(prefers-color-scheme: dark)" />
+
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="OpenScreenShot" />
+    <meta property="og:title" content="Documentation — OpenScreenShot" />
+    <meta
+      property="og:description"
+      content="How to use OpenScreenShot: install, capture, annotate, and export."
+    />
+    <meta property="og:url" content="https://openscreenshot.app/docs/" />
+    <meta property="og:image" content="https://openscreenshot.app/assets/shot-1.jpg" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:image" content="https://openscreenshot.app/assets/shot-1.jpg" />
+
+    <link
+      rel="icon"
+      href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%230a84ff' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z'/%3E%3Ccircle cx='12' cy='13' r='4'/%3E%3C/svg%3E"
+    />
+
+    <style>
+      :root {
+        --s-1: 4px;
+        --s-2: 8px;
+        --s-3: 12px;
+        --s-4: 16px;
+        --s-5: 24px;
+        --s-6: 32px;
+        --s-7: 48px;
+        --s-8: 64px;
+        --r-sm: 6px;
+        --r-md: 10px;
+        --r-lg: 14px;
+        --font:
+          -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, 'Helvetica Neue', Arial,
+          sans-serif;
+        --surface-0: #ffffff;
+        --surface-1: #ffffff;
+        --surface-2: #f5f5f7;
+        --surface-3: #ececef;
+        --text-1: #111114;
+        --text-2: #55555c;
+        --text-3: #8a8a92;
+        --accent: #0071e3;
+        --accent-hover: #0077ed;
+        --accent-subtle: #eaf3fe;
+        --border: #e4e4e9;
+        --border-strong: #d3d3da;
+        --grad-brand: linear-gradient(120deg, #0071e3 0%, #6a5cff 100%);
+        --shadow-sm: 0 1px 2px rgba(17, 17, 20, 0.04);
+        --shadow-md: 0 4px 12px rgba(17, 17, 20, 0.08);
+        --shadow-brand: 0 10px 30px rgba(0, 113, 227, 0.28);
+        --max-w: 780px;
+      }
+      @media (prefers-color-scheme: dark) {
+        :root {
+          --surface-0: #0b0b0d;
+          --surface-1: #141416;
+          --surface-2: #1a1a1d;
+          --surface-3: #242428;
+          --text-1: #f4f4f6;
+          --text-2: #a6a6ad;
+          --text-3: #6e6e77;
+          --accent: #4c9bff;
+          --accent-hover: #6aabff;
+          --accent-subtle: #16273d;
+          --border: #2a2a30;
+          --border-strong: #37373f;
+          --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.3);
+          --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.4);
+        }
+      }
+      * {
+        box-sizing: border-box;
+      }
+      body {
+        margin: 0;
+        padding: 0;
+        font-family: var(--font);
+        font-size: 16px;
+        line-height: 1.6;
+        color: var(--text-1);
+        background: var(--surface-0);
+        -webkit-font-smoothing: antialiased;
+      }
+      a {
+        color: var(--accent);
+        text-decoration: none;
+      }
+      a:hover {
+        color: var(--accent-hover);
+        text-decoration: underline;
+      }
+      .container {
+        max-width: var(--max-w);
+        margin: 0 auto;
+        padding: 0 var(--s-5);
+      }
+      :focus-visible {
+        outline: 2px solid var(--accent);
+        outline-offset: 3px;
+        border-radius: var(--r-sm);
+      }
+
+      nav {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        height: 56px;
+        max-width: var(--max-w);
+        margin: 0 auto;
+        padding: 0 var(--s-5);
+        border-bottom: 1px solid var(--border);
+      }
+      .nav-brand {
+        display: flex;
+        align-items: center;
+        gap: var(--s-2);
+        font-weight: 700;
+        font-size: 16px;
+        color: var(--text-1);
+        text-decoration: none;
+      }
+      .nav-brand:hover {
+        color: var(--text-1);
+        text-decoration: none;
+      }
+      .nav-brand .logo-badge {
+        display: grid;
+        place-items: center;
+        width: 28px;
+        height: 28px;
+        border-radius: 8px;
+        background: var(--grad-brand);
+        color: #fff;
+        box-shadow: var(--shadow-brand);
+      }
+      .nav-links {
+        display: flex;
+        align-items: center;
+        gap: var(--s-5);
+        font-size: 14px;
+      }
+      .nav-links a {
+        color: var(--text-2);
+        font-weight: 500;
+        text-decoration: none;
+      }
+      .nav-links a:hover {
+        color: var(--text-1);
+      }
+
+      h1 {
+        font-size: clamp(28px, 4.5vw, 38px);
+        font-weight: 800;
+        letter-spacing: -0.02em;
+        margin: var(--s-7) 0 var(--s-2);
+      }
+      .lead {
+        color: var(--text-2);
+        font-size: 18px;
+        margin: 0 0 var(--s-6);
+      }
+      h2 {
+        font-size: 24px;
+        font-weight: 800;
+        margin: var(--s-7) 0 var(--s-3);
+      }
+      h3 {
+        font-size: 18px;
+        font-weight: 700;
+        margin: var(--s-5) 0 var(--s-2);
+      }
+      p,
+      li {
+        color: var(--text-2);
+      }
+      strong {
+        color: var(--text-1);
+      }
+      code {
+        font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+        font-size: 0.88em;
+        background: var(--surface-2);
+        border: 1px solid var(--border);
+        border-radius: 5px;
+        padding: 1px 5px;
+        color: var(--text-1);
+      }
+
+      .toc {
+        background: var(--surface-1);
+        border: 1px solid var(--border);
+        border-radius: var(--r-lg);
+        padding: var(--s-4);
+        margin: var(--s-5) 0;
+        box-shadow: var(--shadow-sm);
+      }
+      .toc h2 {
+        font-size: 14px;
+        text-transform: uppercase;
+        letter-spacing: 0.06em;
+        color: var(--text-3);
+        margin: 0 0 var(--s-3);
+      }
+      .toc ul {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+      }
+      .toc li {
+        margin-bottom: var(--s-2);
+      }
+      .toc a {
+        font-weight: 500;
+      }
+
+      .doc-section {
+        margin-top: var(--s-6);
+      }
+      .doc-section h2 {
+        border-bottom: 1px solid var(--border);
+        padding-bottom: var(--s-2);
+      }
+      ul {
+        padding-left: var(--s-5);
+      }
+      li {
+        margin-bottom: var(--s-2);
+      }
+
+      .btn {
+        display: inline-flex;
+        align-items: center;
+        gap: var(--s-2);
+        height: 44px;
+        padding: 0 22px;
+        border: 1px solid transparent;
+        border-radius: var(--r-md);
+        font-size: 15px;
+        font-weight: 600;
+        background: var(--grad-brand);
+        color: #fff;
+        text-decoration: none;
+        box-shadow: var(--shadow-brand);
+        transition:
+          transform 120ms ease,
+          box-shadow 180ms ease;
+      }
+      .btn:hover {
+        color: #fff;
+        text-decoration: none;
+        transform: translateY(-2px);
+        box-shadow: 0 16px 36px rgba(0, 113, 227, 0.36);
+      }
+      .btn-secondary {
+        background: var(--surface-1);
+        color: var(--text-1);
+        border-color: var(--border-strong);
+      }
+      .btn-secondary:hover {
+        background: var(--surface-2);
+      }
+
+      .cta {
+        text-align: center;
+        margin: var(--s-8) 0;
+        padding: var(--s-6) var(--s-5);
+        background: var(--surface-1);
+        border: 1px solid var(--border);
+        border-radius: var(--r-lg);
+      }
+      .cta h2 {
+        margin: 0 0 var(--s-3);
+      }
+      .cta p {
+        margin: 0 0 var(--s-4);
+      }
+
+      footer {
+        margin-top: var(--s-8);
+        border-top: 1px solid var(--border);
+        padding: var(--s-6) 0;
+        text-align: center;
+        font-size: 13px;
+        color: var(--text-3);
+      }
+      footer a {
+        color: var(--text-2);
+      }
+
+      @media (max-width: 640px) {
+        .nav-links .hide-sm {
+          display: none;
+        }
+      }
+      @media (prefers-reduced-motion: reduce) {
+        * {
+          transition: none !important;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <nav>
+      <a href="/" class="nav-brand">
+        <span class="logo-badge"
+          ><svg
+            width="16"
+            height="16"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          >
+            <path
+              d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"
+            />
+            <circle cx="12" cy="13" r="4" /></svg
+        ></span>
+        OpenScreenShot
+      </a>
+      <div class="nav-links">
+        <a class="hide-sm" href="/docs/">Docs</a>
+        <a class="hide-sm" href="/support/">Support</a>
+        <a
+          class="hide-sm"
+          href="https://github.com/pghqdev/OpenScreenShot"
+          target="_blank"
+          rel="noopener"
+          >GitHub</a
+        >
+      </div>
+    </nav>
+
+    <div class="container">
+      <h1>Documentation</h1>
+      <p class="lead">
+        How to install and use OpenScreenShot, the open-source screenshot and annotation extension
+        for Chrome.
+      </p>
+
+      <div class="toc">
+        <h2>On this page</h2>
+        <ul>
+          <li><a href="#install">Install</a></li>
+          <li><a href="#capture">Capture a screenshot</a></li>
+          <li><a href="#modes">Capture modes</a></li>
+          <li><a href="#annotate">Annotate</a></li>
+          <li><a href="#export">Export</a></li>
+          <li><a href="#privacy">Privacy</a></li>
+          <li><a href="#support">Get help</a></li>
+        </ul>
+      </div>
+
+      <div class="doc-section" id="install">
+        <h2>Install</h2>
+        <p>OpenScreenShot is available on the Chrome Web Store.</p>
+        <ol>
+          <li>
+            Open the
+            <a
+              href="https://chromewebstore.google.com/detail/hdabbojjccojlapnfjpdppcpfcnhgmdp"
+              target="_blank"
+              rel="noopener"
+              >OpenScreenShot listing</a
+            >
+            in Chrome.
+          </li>
+          <li>Click <strong>Add to Chrome</strong>.</li>
+          <li>
+            Accept the permissions. The extension needs access to the active tab and the ability to
+            run a content script to capture the page.
+          </li>
+          <li>The OpenScreenShot icon appears in your toolbar. Click it to open the popup.</li>
+        </ol>
+      </div>
+
+      <div class="doc-section" id="capture">
+        <h2>Capture a screenshot</h2>
+        <p>
+          Click the OpenScreenShot icon in your toolbar. Choose one of the three capture modes. The
+          screenshot is processed locally in your browser and then opens in the annotation editor.
+        </p>
+      </div>
+
+      <div class="doc-section" id="modes">
+        <h2>Capture modes</h2>
+        <h3>Full Page</h3>
+        <p>
+          Captures the entire scrolling page and stitches it into one image. The extension scrolls
+          the page viewport by viewport, captures each tile, and composites them together. Fixed
+          headers are captured on the first tile and composited once at the top.
+        </p>
+
+        <h3>Visible Area</h3>
+        <p>
+          Captures the current viewport instantly. No scrolling. Use this for a quick screenshot of
+          what is on screen right now.
+        </p>
+
+        <h3>Selected Region</h3>
+        <p>
+          Click and drag to draw a rectangle. Resize handles appear on each edge and corner. Use the
+          arrow keys to nudge the selection by one pixel at a time, or drag the handles to resize.
+          Press <kbd>Enter</kbd> to confirm or <kbd>Esc</kbd> to cancel.
+        </p>
+      </div>
+
+      <div class="doc-section" id="annotate">
+        <h2>Annotate</h2>
+        <p>
+          After every capture, the annotation editor opens in a new tab. The editor loads the most
+          recent capture from local storage.
+        </p>
+        <ul>
+          <li><strong>Rectangle</strong> — draw a border rectangle.</li>
+          <li><strong>Arrow</strong> — draw a directional arrow.</li>
+          <li><strong>Pen</strong> — freehand drawing.</li>
+          <li><strong>Text</strong> — add a text box. Use the font-size slider to adjust size.</li>
+          <li><strong>Blur</strong> — pixelate a region to hide sensitive information.</li>
+          <li><strong>Crop</strong> — trim the image to a selected area.</li>
+        </ul>
+        <p>
+          Style controls include an 8-color palette, three stroke widths, and a font-size slider.
+          Your choices are remembered across sessions. Undo and redo are available with
+          <kbd>Ctrl+Z</kbd> / <kbd>Ctrl+Shift+Z</kbd> (or <kbd>⌘Z</kbd> / <kbd>⌘Shift+Z</kbd> on
+          macOS).
+        </p>
+      </div>
+
+      <div class="doc-section" id="export">
+        <h2>Export</h2>
+        <p>
+          Click the <strong>Export</strong> button in the top bar of the editor. Choose a format:
+        </p>
+        <ul>
+          <li><strong>PNG</strong> — lossless, supports transparency.</li>
+          <li><strong>JPEG</strong> — smaller file size, with adjustable quality.</li>
+          <li><strong>WebP</strong> — modern format, good balance of size and quality.</li>
+          <li>
+            <strong>PDF</strong> — export as a single image page, fit to A4/Letter, or split across
+            multiple pages with a 5mm overlap so content is not cut mid-line.
+          </li>
+        </ul>
+      </div>
+
+      <div class="doc-section" id="privacy">
+        <h2>Privacy</h2>
+        <p>
+          OpenScreenShot processes everything locally in your browser. Captures are stored in Chrome
+          local storage and are not uploaded to any server. The extension has no analytics, no
+          telemetry, and no third-party services.
+        </p>
+        <p>
+          See the
+          <a
+            href="https://github.com/pghqdev/OpenScreenShot/blob/main/PRIVACY.md"
+            target="_blank"
+            rel="noopener"
+            >Privacy Policy</a
+          >
+          for the full details.
+        </p>
+      </div>
+
+      <div class="doc-section" id="support">
+        <h2>Get help</h2>
+        <p>
+          See the <a href="/support/">Support & FAQ</a> page for common questions and known
+          limitations. If you need more help, open an issue on
+          <a href="https://github.com/pghqdev/OpenScreenShot/issues" target="_blank" rel="noopener"
+            >GitHub</a
+          >.
+        </p>
+      </div>
+
+      <div class="cta">
+        <h2>Install OpenScreenShot</h2>
+        <p>Free, open-source, and private. Available on the Chrome Web Store.</p>
+        <a
+          class="btn"
+          href="https://chromewebstore.google.com/detail/hdabbojjccojlapnfjpdppcpfcnhgmdp"
+          target="_blank"
+          rel="noopener"
+          >Add to Chrome</a
+        >
+      </div>
+    </div>
+
+    <footer>
+      <div class="container">
+        © <span id="year"></span> OpenScreenShot · <a href="/support/">Support</a> ·
+        <a href="https://github.com/pghqdev/OpenScreenShot/blob/main/PRIVACY.md">Privacy</a> ·
+        <a href="https://github.com/pghqdev/OpenScreenShot/blob/main/LICENSE">MIT License</a>
+      </div>
+    </footer>
+
+    <script>
+      document.getElementById('year').textContent = new Date().getFullYear();
+    </script>
+  </body>
+</html>

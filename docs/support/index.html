@@ -1,196 +1,686 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Support — OpenScreenShot</title>
-  <meta name="description" content="OpenScreenShot support — FAQ, troubleshooting, known limitations, and how to get help." />
-  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%230a84ff' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z'/%3E%3Ccircle cx='12' cy='13' r='4'/%3E%3C/svg%3E" />
-  <style>
-    :root {
-      --s-1: 4px; --s-2: 8px; --s-3: 12px; --s-4: 16px; --s-5: 24px; --s-6: 32px; --s-7: 48px; --s-8: 64px;
-      --r-sm: 6px; --r-md: 10px; --r-lg: 16px; --r-full: 9999px;
-      --font: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
-      --surface-1: #ffffff; --surface-2: #f5f5f7; --surface-3: #ebebed;
-      --text-1: #1d1d1f; --text-2: #6e6e73; --text-3: #aeaeb2;
-      --accent: #0071e3; --accent-hover: #0077ed;
-      --accent-subtle: #e8f4fd; --border: #d2d2d7;
-      --shadow-btn: 0 4px 16px rgba(0,113,227,0.3);
-      --max-w: 780px;
-    }
-    @media (prefers-color-scheme: dark) {
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Support &amp; FAQ — OpenScreenShot</title>
+    <meta
+      name="description"
+      content="OpenScreenShot support — FAQ, troubleshooting, known limitations, and how to get help with the open-source Chrome screenshot extension."
+    />
+    <link rel="canonical" href="https://openscreenshot.app/support/" />
+    <meta name="theme-color" content="#ffffff" media="(prefers-color-scheme: light)" />
+    <meta name="theme-color" content="#0b0b0d" media="(prefers-color-scheme: dark)" />
+
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="OpenScreenShot" />
+    <meta property="og:title" content="Support & FAQ — OpenScreenShot" />
+    <meta
+      property="og:description"
+      content="FAQ, troubleshooting, and known limitations for OpenScreenShot, the open-source Chrome screenshot extension."
+    />
+    <meta property="og:url" content="https://openscreenshot.app/support/" />
+    <meta property="og:image" content="https://openscreenshot.app/assets/shot-1.jpg" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:image" content="https://openscreenshot.app/assets/shot-1.jpg" />
+
+    <link
+      rel="icon"
+      href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%230a84ff' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z'/%3E%3Ccircle cx='12' cy='13' r='4'/%3E%3C/svg%3E"
+    />
+
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": "FAQPage",
+        "mainEntity": [
+          {
+            "@type": "Question",
+            "name": "Is my data sent to a server?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "No. Zero data leaves your device. All capture, annotation, and export processing runs locally in your browser. The extension has no analytics, no telemetry, and no third-party services."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "Does it work on chrome:// and extension pages?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "No. For security reasons, Chrome blocks extensions from capturing chrome://, chrome-extension://, the Chrome Web Store, and about: pages. The extension shows an error message if you try."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "Why does full-page capture take a few seconds?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "Chrome limits captureVisibleTab to roughly 2 calls per second. Every viewport-height tile triggers one capture call plus a short paint-settle delay. A typical 10-tile page takes about 5–6 seconds; longer pages take proportionally longer."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "Why is my site header missing from the full-page screenshot?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "Fixed headers do appear — they are captured on the first tile. If a header still seems missing, it may use position: sticky with scroll-behavior flags that the capture process handles differently. This is rare; please open a GitHub issue if you hit it."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "Can I scroll while selecting a region?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "Not yet. The region selection tool is currently viewport-only and locks scrolling while you drag. To select an area below the fold, take a full-page capture and crop it in the editor. Scroll-during-select is planned."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "How do I open the editor after a capture?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "The editor opens automatically in a new tab after every capture. Export your annotated screenshot from the editor's Export button in the top bar."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "Can I use the editor without capturing a new screenshot?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "Not directly — the editor loads the most recent capture from storage. Loading arbitrary image files into the editor is a planned improvement."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "Why does PDF export bundle extra libraries?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "The extension uses jsPDF (lazy-loaded) for PDF generation. jsPDF transitively includes html2canvas and dompurify for its doc.html() feature, which we never call — we only use doc.addImage(). These are downloaded only when you export a PDF (about 580 KB, ~180 KB gzipped)."
+            }
+          }
+        ]
+      }
+    </script>
+
+    <style>
       :root {
-        --surface-1: #1c1c1e; --surface-2: #2c2c2e; --surface-3: #3a3a3c;
-        --text-1: #f5f5f7; --text-2: #98989d; --text-3: #636366;
-        --accent: #0a84ff; --accent-hover: #409cff;
-        --accent-subtle: #1a3a5c; --border: #48484a;
-        --shadow-btn: 0 4px 16px rgba(10,132,255,0.35);
-    }
-    * { box-sizing: border-box; }
-    body {
-      margin: 0; padding: 0;
-      font-family: var(--font); font-size: 16px; line-height: 1.6;
-      color: var(--text-1); background: var(--surface-1);
-      -webkit-font-smoothing: antialiased;
-    }
-    a { color: var(--accent); text-decoration: none; }
-    a:hover { color: var(--accent-hover); text-decoration: underline; }
-    .container { max-width: var(--max-w); margin: 0 auto; padding: 0 var(--s-5); }
+        --s-1: 4px;
+        --s-2: 8px;
+        --s-3: 12px;
+        --s-4: 16px;
+        --s-5: 24px;
+        --s-6: 32px;
+        --s-7: 48px;
+        --s-8: 64px;
+        --r-sm: 8px;
+        --r-md: 12px;
+        --r-lg: 18px;
+        --r-full: 9999px;
+        --font:
+          -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, 'Helvetica Neue', Arial,
+          sans-serif;
+        --surface-0: #ffffff;
+        --surface-1: #ffffff;
+        --surface-2: #f5f5f7;
+        --surface-3: #ececef;
+        --text-1: #111114;
+        --text-2: #55555c;
+        --text-3: #8a8a92;
+        --accent: #0071e3;
+        --accent-2: #6a5cff;
+        --accent-hover: #0077ed;
+        --accent-subtle: #eaf3fe;
+        --border: #e4e4e9;
+        --border-strong: #d3d3da;
+        --grad-brand: linear-gradient(120deg, #0071e3 0%, #6a5cff 100%);
+        --grad-text: linear-gradient(120deg, #0071e3 0%, #7b5cff 60%, #a04cff 100%);
+        --shadow-sm: 0 1px 2px rgba(17, 17, 20, 0.04), 0 2px 6px rgba(17, 17, 20, 0.04);
+        --shadow-brand: 0 10px 30px rgba(0, 113, 227, 0.28);
+        --max-w: 780px;
+      }
+      @media (prefers-color-scheme: dark) {
+        :root {
+          --surface-0: #0b0b0d;
+          --surface-1: #141416;
+          --surface-2: #1a1a1d;
+          --surface-3: #242428;
+          --text-1: #f4f4f6;
+          --text-2: #a6a6ad;
+          --text-3: #6e6e77;
+          --accent: #4c9bff;
+          --accent-2: #8f83ff;
+          --accent-hover: #6aabff;
+          --accent-subtle: #16273d;
+          --border: #2a2a30;
+          --border-strong: #37373f;
+          --grad-text: linear-gradient(120deg, #58a6ff 0%, #9b8bff 60%, #c07cff 100%);
+          --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.3);
+          --shadow-brand: 0 10px 30px rgba(76, 155, 255, 0.28);
+        }
+      }
+      * {
+        box-sizing: border-box;
+      }
+      body {
+        margin: 0;
+        padding: 0;
+        font-family: var(--font);
+        font-size: 16px;
+        line-height: 1.6;
+        color: var(--text-1);
+        background: var(--surface-0);
+        -webkit-font-smoothing: antialiased;
+      }
+      a {
+        color: var(--accent);
+        text-decoration: none;
+      }
+      a:hover {
+        color: var(--accent-hover);
+        text-decoration: underline;
+      }
+      .container {
+        max-width: var(--max-w);
+        margin: 0 auto;
+        padding: 0 var(--s-5);
+      }
+      :focus-visible {
+        outline: 2px solid var(--accent);
+        outline-offset: 3px;
+        border-radius: var(--r-sm);
+      }
 
-    nav {
-      display: flex; align-items: center; justify-content: space-between;
-      padding: var(--s-4) var(--s-5); max-width: var(--max-w); margin: 0 auto;
-    }
-    .nav-brand { display: flex; align-items: center; gap: var(--s-2); font-weight: 700; font-size: 18px; color: var(--text-1); text-decoration: none; }
-    .nav-brand svg { color: var(--accent); }
-    a.nav-brand:hover { color: var(--text-1); text-decoration: none; }
-    .nav-back { font-size: 14px; color: var(--text-2); }
+      nav {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        height: 60px;
+        max-width: var(--max-w);
+        margin: 0 auto;
+        padding: 0 var(--s-5);
+        border-bottom: 1px solid var(--border);
+      }
+      .nav-brand {
+        display: flex;
+        align-items: center;
+        gap: var(--s-2);
+        font-weight: 700;
+        font-size: 17px;
+        color: var(--text-1);
+        text-decoration: none;
+      }
+      .nav-brand .logo-badge {
+        display: grid;
+        place-items: center;
+        width: 30px;
+        height: 30px;
+        border-radius: 9px;
+        background: var(--grad-brand);
+        color: #fff;
+        box-shadow: var(--shadow-brand);
+      }
+      a.nav-brand:hover {
+        color: var(--text-1);
+        text-decoration: none;
+      }
+      .nav-back {
+        font-size: 14px;
+        color: var(--text-2);
+      }
 
-    h1 { font-size: 36px; font-weight: 750; letter-spacing: -0.02em; margin: var(--s-7) 0 var(--s-2); }
-    h2 { font-size: 22px; font-weight: 700; margin: var(--s-6) 0 var(--s-3); padding-bottom: var(--s-2); border-bottom: 1px solid var(--border); }
-    h3 { font-size: 17px; font-weight: 600; margin: var(--s-4) 0 var(--s-2); }
-    p, li { color: var(--text-2); }
-    ul { padding-left: var(--s-5); }
-    li { margin-bottom: var(--s-1); }
-    strong { color: var(--text-1); }
+      h1 {
+        font-size: clamp(30px, 5vw, 40px);
+        font-weight: 800;
+        letter-spacing: -0.02em;
+        margin: var(--s-8) 0 var(--s-2);
+      }
+      .lead {
+        color: var(--text-2);
+        font-size: 18px;
+        margin: 0 0 var(--s-6);
+      }
+      h2 {
+        font-size: 22px;
+        font-weight: 700;
+        margin: var(--s-8) 0 var(--s-4);
+      }
+      p,
+      li {
+        color: var(--text-2);
+      }
+      strong {
+        color: var(--text-1);
+      }
+      code {
+        font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+        font-size: 0.88em;
+        background: var(--surface-2);
+        border: 1px solid var(--border);
+        border-radius: 5px;
+        padding: 1px 5px;
+        color: var(--text-1);
+      }
 
-    .faq-item { margin-bottom: var(--s-2); }
-    .faq-q {
-      width: 100%; text-align: left; padding: var(--s-3) var(--s-4);
-      background: var(--surface-2); border: 1px solid var(--border); border-radius: var(--r-md);
-      font-size: 15px; font-weight: 600; cursor: pointer; color: var(--text-1);
-      transition: background 150ms ease-out;
-    }
-    .faq-q:hover { background: var(--surface-3); border-color: var(--text-3); }
-    .faq-a {
-      padding: var(--s-3) var(--s-4); border: 1px solid var(--border); border-top: none;
-      border-radius: 0 0 var(--r-md) var(--r-md); font-size: 14px; display: none;
-    }
-    .faq-a.open { display: block; }
-    .faq-a p { margin: 0 0 var(--s-2); }
-    .faq-a p:last-child { margin-bottom: 0; }
+      details.faq {
+        border: 1px solid var(--border);
+        border-radius: var(--r-md);
+        background: var(--surface-1);
+        margin-bottom: var(--s-3);
+        box-shadow: var(--shadow-sm);
+        overflow: hidden;
+      }
+      details.faq[open] {
+        border-color: var(--border-strong);
+      }
+      details.faq summary {
+        list-style: none;
+        cursor: pointer;
+        padding: var(--s-4);
+        font-size: 15px;
+        font-weight: 600;
+        color: var(--text-1);
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: var(--s-3);
+      }
+      details.faq summary::-webkit-details-marker {
+        display: none;
+      }
+      details.faq summary:hover {
+        background: var(--surface-2);
+      }
+      details.faq summary .chev {
+        flex: none;
+        color: var(--text-3);
+        transition: transform 200ms ease;
+      }
+      details.faq[open] summary .chev {
+        transform: rotate(180deg);
+      }
+      details.faq .faq-a {
+        padding: 0 var(--s-4) var(--s-4);
+        font-size: 14.5px;
+      }
+      details.faq .faq-a p {
+        margin: 0 0 var(--s-2);
+      }
+      details.faq .faq-a p:last-child {
+        margin-bottom: 0;
+      }
 
-    .btn {
-      display: inline-flex; align-items: center; gap: var(--s-2);
-      height: 44px; padding: 0 24px; border-radius: var(--r-md); font-size: 15px; font-weight: 600;
-      cursor: pointer; transition: background 150ms ease-out;
-    }
-    .btn-primary { background: var(--accent); color: #fff; }
-    .btn-primary:hover { background: var(--accent-hover); color: #fff; text-decoration: none; box-shadow: var(--shadow-btn); }
+      ul.notes {
+        padding-left: var(--s-5);
+      }
+      ul.notes li {
+        margin-bottom: var(--s-2);
+      }
 
-    footer {
-      margin-top: var(--s-8); border-top: 1px solid var(--border);
-      padding: var(--s-6) 0; text-align: center; font-size: 13px; color: var(--text-3);
-    }
-    footer a { color: var(--text-2); }
+      .cta {
+        text-align: center;
+        margin: var(--s-8) 0;
+      }
+      .btn {
+        display: inline-flex;
+        align-items: center;
+        gap: var(--s-2);
+        height: 48px;
+        padding: 0 24px;
+        border-radius: var(--r-md);
+        font-size: 15px;
+        font-weight: 600;
+        cursor: pointer;
+        background: var(--grad-brand);
+        color: #fff;
+        box-shadow: var(--shadow-brand);
+        transition:
+          transform 120ms ease,
+          box-shadow 180ms ease;
+      }
+      .btn:hover {
+        color: #fff;
+        text-decoration: none;
+        transform: translateY(-2px);
+        box-shadow: 0 16px 36px rgba(0, 113, 227, 0.36);
+      }
 
-    @media (max-width: 600px) {
-      h1 { font-size: 28px; }
-    }
-  </style>
-</head>
-<body>
+      footer {
+        margin-top: var(--s-8);
+        border-top: 1px solid var(--border);
+        padding: var(--s-6) 0;
+        text-align: center;
+        font-size: 13px;
+        color: var(--text-3);
+      }
+      footer a {
+        color: var(--text-2);
+      }
+      @media (prefers-reduced-motion: reduce) {
+        * {
+          transition: none !important;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <nav>
+      <a href="/" class="nav-brand">
+        <span class="logo-badge"
+          ><svg
+            width="18"
+            height="18"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          >
+            <path
+              d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"
+            />
+            <circle cx="12" cy="13" r="4" /></svg
+        ></span>
+        OpenScreenShot
+      </a>
+      <a href="/docs/" class="nav-back">Docs</a>
+    </nav>
 
-<nav>
-  <a href="/" class="nav-brand">
-    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-      <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/>
-    </svg>
-    OpenScreenShot
-  </a>
-  <a href="/" class="nav-back">&larr; Home</a>
-</nav>
+    <div class="container">
+      <h1>Support &amp; FAQ</h1>
+      <p class="lead">Answers to common questions, known limitations, and how to get help.</p>
 
-<div class="container">
-  <h1>Support &amp; FAQ</h1>
+      <h2 id="faq">Frequently asked questions</h2>
 
-  <h2 id="faq">Frequently asked questions</h2>
+      <details class="faq">
+        <summary>
+          Is my data sent to a server?
+          <svg
+            class="chev"
+            width="18"
+            height="18"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          >
+            <polyline points="6 9 12 15 18 9" />
+          </svg>
+        </summary>
+        <div class="faq-a">
+          <p>
+            No. <strong>Zero data leaves your device.</strong> All capture, annotation, and export
+            processing runs locally in your browser. The extension has no analytics, no telemetry,
+            and no third-party services. See the
+            <a href="https://github.com/pghqdev/OpenScreenShot/blob/main/PRIVACY.md"
+              >Privacy Policy</a
+            >
+            for details.
+          </p>
+        </div>
+      </details>
 
-  <div class="faq-item">
-    <button class="faq-q" onclick="this.nextElementSibling.classList.toggle('open')">Is my data sent to a server?</button>
-    <div class="faq-a">
-      <p>No. <strong>Zero data leaves your device.</strong> All capture, annotation, and export processing runs locally in your browser. The extension has no analytics, no telemetry, and no third-party services. See the <a href="https://github.com/pghqdev/OpenScreenShot/blob/main/PRIVACY.md">Privacy Policy</a> for details.</p>
+      <details class="faq">
+        <summary>
+          Does it work on chrome:// and extension pages?
+          <svg
+            class="chev"
+            width="18"
+            height="18"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          >
+            <polyline points="6 9 12 15 18 9" />
+          </svg>
+        </summary>
+        <div class="faq-a">
+          <p>
+            No. For security reasons, Chrome blocks extensions from capturing
+            <code>chrome://</code>, <code>chrome-extension://</code>, the Chrome Web Store, and
+            <code>about:</code> pages. The extension will show an error message if you try.
+          </p>
+        </div>
+      </details>
+
+      <details class="faq">
+        <summary>
+          Why does full-page capture take a few seconds?
+          <svg
+            class="chev"
+            width="18"
+            height="18"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          >
+            <polyline points="6 9 12 15 18 9" />
+          </svg>
+        </summary>
+        <div class="faq-a">
+          <p>
+            Chrome limits <code>captureVisibleTab</code> to approximately 2 calls per second. Every
+            viewport-height tile triggers one capture call, plus a short paint-settle delay. For a
+            typical 10-tile page this takes about 5–6 seconds. The progress bar in the popup shows
+            how it's going. Long pages take proportionally longer.
+          </p>
+        </div>
+      </details>
+
+      <details class="faq">
+        <summary>
+          Why is my site header missing from the full-page screenshot?
+          <svg
+            class="chev"
+            width="18"
+            height="18"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          >
+            <polyline points="6 9 12 15 18 9" />
+          </svg>
+        </summary>
+        <div class="faq-a">
+          <p>
+            Fixed headers <em>do</em> appear — they're captured on the first tile. If a header still
+            seems missing, it may use <code>position: sticky</code> with certain scroll-behavior
+            flags that the capture process handles differently. This is rare; if you encounter it,
+            please open a
+            <a href="https://github.com/pghqdev/OpenScreenShot/issues">GitHub issue</a>.
+          </p>
+        </div>
+      </details>
+
+      <details class="faq">
+        <summary>
+          Can I scroll while selecting a region?
+          <svg
+            class="chev"
+            width="18"
+            height="18"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          >
+            <polyline points="6 9 12 15 18 9" />
+          </svg>
+        </summary>
+        <div class="faq-a">
+          <p>
+            Not yet. The region selection tool is currently viewport-only — it locks scrolling while
+            you drag. Selecting an area that extends below the fold requires a full-page capture
+            followed by cropping in the editor. Scroll-during-select is a planned feature.
+          </p>
+        </div>
+      </details>
+
+      <details class="faq">
+        <summary>
+          How do I open the editor after a capture?
+          <svg
+            class="chev"
+            width="18"
+            height="18"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          >
+            <polyline points="6 9 12 15 18 9" />
+          </svg>
+        </summary>
+        <div class="faq-a">
+          <p>
+            The editor opens automatically in a new tab after every capture — you don't need to do
+            anything. If the popup is still open, it will close once the editor tab is ready. Export
+            (download) your annotated screenshot from the editor's "Export" button in the top bar.
+          </p>
+        </div>
+      </details>
+
+      <details class="faq">
+        <summary>
+          Can I use the editor without capturing a new screenshot?
+          <svg
+            class="chev"
+            width="18"
+            height="18"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          >
+            <polyline points="6 9 12 15 18 9" />
+          </svg>
+        </summary>
+        <div class="faq-a">
+          <p>
+            Not directly — the editor loads the most recent capture from storage. If you want to
+            edit an existing screenshot file, you'd need to capture it fresh through the extension.
+            Loading arbitrary image files into the editor is a planned improvement.
+          </p>
+        </div>
+      </details>
+
+      <details class="faq">
+        <summary>
+          Why does PDF export bundle extra libraries?
+          <svg
+            class="chev"
+            width="18"
+            height="18"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          >
+            <polyline points="6 9 12 15 18 9" />
+          </svg>
+        </summary>
+        <div class="faq-a">
+          <p>
+            The extension uses <a href="https://github.com/parallax/jsPDF">jsPDF</a> (lazy-loaded)
+            for PDF generation. jsPDF transitively includes <code>html2canvas</code> and
+            <code>dompurify</code> for its <code>doc.html()</code> feature, which we never call — we
+            only use <code>doc.addImage()</code>. These libraries are bundled in the extension
+            package but only downloaded when you export a PDF (lazy chunk). The total on-demand PDF
+            cost is about 580 KB (gzipped ~180 KB).
+          </p>
+        </div>
+      </details>
+
+      <h2 id="limitations">Known limitations</h2>
+      <ul class="notes">
+        <li>
+          <strong>Region selection is viewport-only</strong> — scrolling while selecting is not yet
+          supported. Use full-page capture + crop instead.
+        </li>
+        <li>
+          <strong>Text and pen annotations are move-only</strong> — resize handles for text boxes
+          and freehand strokes are planned.
+        </li>
+        <li>
+          <strong>Dynamic / infinite-scroll pages</strong> — the capture engine measures the page
+          height once at the start. Pages that load content as-you-scroll may produce an incomplete
+          result.
+        </li>
+        <li>
+          <strong>Editor i18n</strong> — the annotation editor UI is currently English only. The
+          popup is fully internationalized.
+        </li>
+        <li>
+          <strong>No settings sync</strong> — your theme, export format, and filename template live
+          in local storage and don't sync across devices or profiles.
+        </li>
+      </ul>
+
+      <h2 id="get-help">Get help</h2>
+      <p>If you hit a bug, have a feature request, or need help with anything not covered here:</p>
+      <ul class="notes">
+        <li>
+          <strong>Open a GitHub issue</strong> —
+          <a href="https://github.com/pghqdev/OpenScreenShot/issues"
+            >github.com/pghqdev/OpenScreenShot/issues</a
+          >
+        </li>
+        <li>
+          <strong>Leave a review</strong> on the
+          <a href="https://chromewebstore.google.com/detail/hdabbojjccojlapnfjpdppcpfcnhgmdp"
+            >Chrome Web Store</a
+          >
+          — it helps other users discover the extension.
+        </li>
+        <li>
+          <strong>Contribute</strong> — the extension is MIT licensed. Pull requests are welcome.
+          See
+          <a href="https://github.com/pghqdev/OpenScreenShot/blob/main/CONTRIBUTING.md"
+            >CONTRIBUTING.md</a
+          >.
+        </li>
+      </ul>
+
+      <div class="cta">
+        <a
+          class="btn"
+          href="https://github.com/pghqdev/OpenScreenShot/issues/new"
+          target="_blank"
+          rel="noopener"
+          >Open a GitHub issue</a
+        >
+      </div>
     </div>
-  </div>
 
-  <div class="faq-item">
-    <button class="faq-q" onclick="this.nextElementSibling.classList.toggle('open')">Does it work on Chrome&#8281;:// and extension pages?</button>
-    <div class="faq-a">
-      <p>No. For security reasons, Chrome blocks extensions from capturing <code>chrome://</code>, <code>chrome-extension://</code>, the Chrome Web Store, and <code>about:</code> pages. The extension will show an error message if you try.</p>
-    </div>
-  </div>
+    <footer>
+      <div class="container">
+        © <span id="year"></span> OpenScreenShot by PGHQ.dev ·
+        <a href="https://github.com/pghqdev/OpenScreenShot/blob/main/PRIVACY.md">Privacy</a> ·
+        <a href="https://github.com/pghqdev/OpenScreenShot/blob/main/LICENSE">MIT License</a>
+      </div>
+    </footer>
 
-  <div class="faq-item">
-    <button class="faq-q" onclick="this.nextElementSibling.classList.toggle('open')">Why does the full-page capture take a few seconds?</button>
-    <div class="faq-a">
-      <p>Chrome limits <code>captureVisibleTab</code> to approximately 2 calls per second. Every viewport-height tile triggers one capture call, plus a short paint-settle delay. For a typical 10-tile page this takes about 5–6 seconds. The progress bar in the popup shows how it's going. Long pages take proportionally longer.</p>
-    </div>
-  </div>
-
-  <div class="faq-item">
-    <button class="faq-q" onclick="this.nextElementSibling.classList.toggle('open')">Why is my site header missing from the full-page screenshot?</button>
-    <div class="faq-a">
-      <p>Fixed headers <em>do</em> appear — they're captured on the first tile. If a header still seems missing, it may use <code>position: sticky</code> with certain scroll-behavior flags that the capture process handles differently. This is rare; if you encounter it, please open a <a href="https://github.com/pghqdev/OpenScreenShot/issues">GitHub issue</a>.</p>
-    </div>
-  </div>
-
-  <div class="faq-item">
-    <button class="faq-q" onclick="this.nextElementSibling.classList.toggle('open')">The region selector doesn't let me scroll. Can I select something below the viewport?</button>
-    <div class="faq-a">
-      <p>Currently the region selection tool is viewport-only — it locks scrolling while you drag. Selecting an area that extends below the fold requires a full-page capture followed by cropping in the editor. Scroll-during-select is a planned feature.</p>
-    </div>
-  </div>
-
-  <div class="faq-item">
-    <button class="faq-q" onclick="this.nextElementSibling.classList.toggle('open')">How do I open the editor after a capture?</button>
-    <div class="faq-a">
-      <p>The editor opens automatically in a new tab after every capture — you don't need to do anything. If the popup is still open, it will close once the editor tab is ready. Export (download) your annotated screenshot from the editor's "Export" button in the top bar.</p>
-    </div>
-  </div>
-
-  <div class="faq-item">
-    <button class="faq-q" onclick="this.nextElementSibling.classList.toggle('open')">Can I use the annotation editor without capturing a new screenshot?</button>
-    <div class="faq-a">
-      <p>Not directly — the editor loads the most recent capture from storage. If you want to edit an existing screenshot file, you'd need to capture it fresh through the extension. Loading arbitrary image files into the editor is a planned improvement.</p>
-    </div>
-  </div>
-
-  <div class="faq-item">
-    <button class="faq-q" onclick="this.nextElementSibling.classList.toggle('open')">Why is PDF export so large / why does it bundle extra libraries?</button>
-    <div class="faq-a">
-      <p>The extension uses <a href="https://github.com/parallax/jsPDF">jsPDF</a> (lazy-loaded) for PDF generation. jsPDF transitively includes <code>html2canvas</code> and <code>dompurify</code> for its <code>doc.html()</code> feature, which we never call — we only use <code>doc.addImage()</code>. These libraries are bundled in the extension package but only downloaded when you export a PDF (lazy chunk). The total on-demand PDF cost is about 580 KB (gzipped ~180 KB).</p>
-    </div>
-  </div>
-
-  <h2 id="limitations">Known limitations</h2>
-  <ul>
-    <li><strong>Region selection is viewport-only</strong> — scrolling while selecting is not yet supported. Use full-page capture + crop instead.</li>
-    <li><strong>Text and pen annotations are move-only</strong> — resize handles for text boxes and freehand strokes are planned.</li>
-    <li><strong>Dynamic / infinite-scroll pages</strong> — the capture engine measures the page height once at the start. Pages that load content as-you-scroll (infinite scroll, lazy images) may produce an incomplete result. A single capture step is planned for the future.</li>
-    <li><strong>Editor i18n</strong> — the annotation editor UI is currently English only. The popup is fully internationalized.</li>
-    <li><strong>No settings sync</strong> — your theme, export format, and filename template live in local storage and don't sync across devices/browser profiles.</li>
-  </ul>
-
-  <h2 id="get-help">Get help</h2>
-  <p>If you encounter a bug, have a feature request, or need help with anything not covered here:</p>
-  <ul>
-    <li><strong>Open a GitHub issue</strong> — <a href="https://github.com/pghqdev/OpenScreenShot/issues">github.com/pghqdev/OpenScreenShot/issues</a></li>
-    <li><strong>Leave a review</strong> on the <a href="https://chromewebstore.google.com/detail/hdabbojjccojlapnfjpdppcpfcnhgmdp">Chrome Web Store</a> — this helps other users discover the extension.</li>
-    <li><strong>Contribute</strong> — the extension is MIT licensed. Pull requests are welcome. See <a href="https://github.com/pghqdev/OpenScreenShot/blob/main/CONTRIBUTING.md">CONTRIBUTING.md</a>.</li>
-  </ul>
-
-  <div style="text-align: center; margin: var(--s-7) 0;">
-    <a class="btn btn-primary" href="https://github.com/pghqdev/OpenScreenShot/issues/new" target="_blank">Open a GitHub issue</a>
-  </div>
-</div>
-
-<footer>
-  <div class="container">
-    &copy; 2026 OpenScreenShot by PGHQ.dev &middot;
-    <a href="https://github.com/pghqdev/OpenScreenShot/blob/main/PRIVACY.md">Privacy</a> &middot;
-    <a href="https://github.com/pghqdev/OpenScreenShot/blob/main/LICENSE">MIT License</a>
-  </div>
-</footer>
-
-</body>
+    <script>
+      document.getElementById('year').textContent = new Date().getFullYear();
+    </script>
+  </body>
 </html>
