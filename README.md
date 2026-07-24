@@ -2,7 +2,7 @@
 
 # OpenScreenShot
 
-**Open-source screenshot tool for Chrome** — full-page, region, and visible-area capture with a built-in annotation editor and PDF export. Everything runs locally; your screenshots never leave your device.
+**Open-source screenshot tool for Chrome** — full-page, region, and visible-area capture with a built-in annotation editor and PDF export. 100% local and private: works fully offline, and your screenshots never leave your device.
 
 [![Chrome Web Store](https://img.shields.io/chrome-web-store/v/hdabbojjccojlapnfjpdppcpfcnhgmdp?label=Chrome%20Web%20Store&logo=googlechrome&logoColor=white&color=0A84FF)](https://chromewebstore.google.com/detail/hdabbojjccojlapnfjpdppcpfcnhgmdp)
 [![Users](https://img.shields.io/chrome-web-store/users/hdabbojjccojlapnfjpdppcpfcnhgmdp?label=users&color=34C759)](https://chromewebstore.google.com/detail/hdabbojjccojlapnfjpdppcpfcnhgmdp)
@@ -124,7 +124,11 @@ We never request broad host permissions (`<all_urls>`) — `activeTab` grants ac
 
 ## Privacy
 
-All capture and processing happens locally in your browser. Screenshots are never uploaded anywhere. See [PRIVACY.md](./PRIVACY.md).
+**100% local. 100% private. Works fully offline.**
+
+Your screenshots never leave your device — there are no servers, no accounts, no sign-ups, and no tracking. Every capture, edit, and export happens right inside your browser, so nothing is ever uploaded, stored in the cloud, or seen by anyone but you. You could pull the network cable and it would work exactly the same.
+
+Read the full [Privacy Policy](./PRIVACY.md).
 
 ## Contributing
 
