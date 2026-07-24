@@ -1,30 +1,45 @@
+<div align="center">
+
 # OpenScreenShot
 
-> Open-source screenshot tool for Chrome — full-page, region, and visible-area capture with an annotation editor and PDF export. Built as a Manifest V3 extension.
+**Open-source screenshot tool for Chrome** — full-page, region, and visible-area capture with a built-in annotation editor and PDF export. Everything runs locally; your screenshots never leave your device.
 
-![status](https://img.shields.io/badge/status-v0.1.0-34C759) ![license](https://img.shields.io/badge/license-MIT-34C759) ![manifest](https://img.shields.io/badge/manifest-v3-0A84FF)
+[![Chrome Web Store](https://img.shields.io/chrome-web-store/v/hdabbojjccojlapnfjpdppcpfcnhgmdp?label=Chrome%20Web%20Store&logo=googlechrome&logoColor=white&color=0A84FF)](https://chromewebstore.google.com/detail/hdabbojjccojlapnfjpdppcpfcnhgmdp)
+[![Users](https://img.shields.io/chrome-web-store/users/hdabbojjccojlapnfjpdppcpfcnhgmdp?label=users&color=34C759)](https://chromewebstore.google.com/detail/hdabbojjccojlapnfjpdppcpfcnhgmdp)
+[![License](https://img.shields.io/badge/license-MIT-34C759)](./LICENSE)
+[![Manifest V3](https://img.shields.io/badge/manifest-v3-0A84FF)](./manifest.json)
 
-OpenScreenShot captures the **entire scrolling page** (scroll-and-stitch), the **visible viewport**, or a **selected region**, lets you annotate the result, and export as PNG, JPEG, WebP, or PDF. Everything runs locally in your browser — your data never leaves your device.
+### [**➜ Add to Chrome**](https://chromewebstore.google.com/detail/hdabbojjccojlapnfjpdppcpfcnhgmdp) &nbsp;·&nbsp; [Website](https://openscreenshot.app) &nbsp;·&nbsp; [Docs](https://openscreenshot.app/docs/) &nbsp;·&nbsp; [Support](https://openscreenshot.app/support/)
 
-## Status
+<img src="docs/assets/demo.gif" alt="OpenScreenShot: capturing a full page, annotating it, and exporting" width="820" />
 
-| Milestone | Focus                                                                         | State   |
-| --------- | ----------------------------------------------------------------------------- | ------- |
-| M1        | Foundation — scaffold, design system, popup, onboarding, visible-area capture | ✅ Done |
-| M2        | Capture engine — full-page scroll-and-stitch + region selection               | ✅ Done |
-| M3        | Annotation editor + export (PNG/JPEG/WebP/PDF)                                | ✅ Done |
-| M4        | Polish — settings, style controls, fixed-element compositing, accessibility   | ✅ Done |
-| M5        | Launch — tests, store listing, i18n                                           | ✅ Done |
+</div>
+
+---
+
+Capture the **entire scrolling page** (scroll-and-stitch), the **visible viewport**, or a **selected region** — then annotate the result and export as PNG, JPEG, WebP, or PDF. Built as a Manifest V3 extension with no servers, no accounts, and no telemetry.
 
 ## Features
 
-- 📄 **Full Page** — scroll-and-stitch the entire page, top to bottom, with live progress; fixed headers appear once at the top
-- 👁 **Visible Area** — capture what's on screen now
-- ✂️ **Selected Region** — click & drag to capture an area (viewport-only for now; scroll-during-select is planned)
-- ✏️ **Annotation editor** — rectangle, arrow, pen, text, blur, crop; select, move/resize, undo/redo; color, stroke width & font size (remembered across sessions)
-- 💾 **Export** — PNG, JPEG, WebP, and PDF (single page or multi-page with overlap) from the editor
+- 📄 **Full Page** — scroll-and-stitch the whole page top to bottom with live progress; fixed headers are composited once at the top. Works on pages that scroll an inner element, too.
+- 👁 **Visible Area** — capture exactly what's on screen right now
+- ✂️ **Selected Region** — click & drag to grab an area, with a Capture/Cancel bar to confirm
+- ✏️ **Annotation editor** — rectangle, arrow, pen, text, blur, crop; select, move/resize, undo/redo; color, stroke width & font size remembered across sessions
+- 💾 **Export** — PNG, JPEG, WebP, and PDF (single or multi-page with overlap), or copy straight to clipboard with `Cmd/Ctrl+C`
 - ⚙️ **Settings** — theme, default format, quality, filename template, PDF defaults
-- 🎨 Polished, accessible (modal focus trap, toolbar arrow-key nav), dark/light UI
+- 🎨 **Polished & accessible** — dark/light UI, modal focus trap, toolbar arrow-key navigation
+
+<div align="center">
+<img src="https://openscreenshot.app/assets/shot-2.jpg" alt="Popup showing Full Page, Visible, and Region capture modes" width="270" />
+<img src="https://openscreenshot.app/assets/shot-3.jpg" alt="Annotation editor with color palette and stroke controls" width="270" />
+<img src="https://openscreenshot.app/assets/shot-4.jpg" alt="Export dialog with PDF, PNG, JPEG, and WebP options" width="270" />
+</div>
+
+## Install
+
+**From the Chrome Web Store** — [**Add to Chrome**](https://chromewebstore.google.com/detail/hdabbojjccojlapnfjpdppcpfcnhgmdp). That's it.
+
+**From source** — see [Getting started](#getting-started) below.
 
 ## Tech stack
 
@@ -90,8 +105,7 @@ openscreenshot/
 │   ├── content/             # on-demand capture funcs (scroll, region)
 │   ├── editor/              # annotation editor + export (Preact, own tab)
 │   ├── popup/               # popup UI (Preact)
-│   ├── shared/              # design tokens, messaging, storage, types, utils
-│   └── (onboarding/ — later milestone)
+│   └── shared/              # design tokens, messaging, storage, types, utils
 ├── tests/                   # unit + e2e tests
 └── scripts/generate-icons.mjs
 ```
@@ -104,7 +118,7 @@ OpenScreenShot requests the minimum permissions needed:
 - `scripting` — inject on-demand page functions for scroll-and-stitch & region selection
 - `storage` (+ `unlimitedStorage`) — settings/onboarding state and stashing large full-page PNGs for the editor
 - `downloads` — save exports to your downloads folder
-- `options_ui` — the editor is registered as a full-tab options page so crxjs bundles it; it’s opened in a tab after each capture
+- `options_ui` — the editor is registered as a full-tab options page so crxjs bundles it; it's opened in a tab after each capture
 
 We never request broad host permissions (`<all_urls>`) — `activeTab` grants access on your click/shortcut, and `scripting` runs within that grant.
 
