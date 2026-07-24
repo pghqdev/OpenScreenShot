@@ -115,8 +115,12 @@ export function App() {
     if (busy) return;
     setBusy(mode);
     if (mode === 'region') {
-      sendToBackground({ type: 'CAPTURE_REQUEST', mode }).catch(() => {});
-      setTimeout(() => window.close(), 0);
+      // Close only AFTER the request is delivered — closing first can drop the
+      // message to a cold service worker, so region would silently no-op on the
+      // first click and only work once the worker is warm.
+      void sendToBackground({ type: 'CAPTURE_REQUEST', mode })
+        .catch(() => {})
+        .finally(() => window.close());
       return;
     }
     setProgress(0);
